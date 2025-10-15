@@ -59,8 +59,13 @@ By signing below, we acknowledge that we have read, discussed, and agreed to the
 Team Member Signatures:
 
 Nathan Mills
+
 Akash Nagabhirava
+
 James William Hanzell
+
 Stephen Yules
+
 Kai Tano Bague
+
 Letian Wang
