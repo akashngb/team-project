@@ -143,6 +143,4 @@ public class AppBuilder {
 
         return application;
     }
-
-
 }
