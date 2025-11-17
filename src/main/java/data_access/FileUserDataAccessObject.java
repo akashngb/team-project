@@ -20,7 +20,7 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
                                                  ChangePasswordUserDataAccessInterface,
                                                  LogoutUserDataAccessInterface {
 
-    private static final String HEADER = "username,password";
+    private static final String HEADER = "username,password,apiToken";
 
     private final File csvFile;
     private final Map<String, Integer> headers = new LinkedHashMap<>();
@@ -39,6 +39,7 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
         csvFile = new File(csvPath);
         headers.put("username", 0);
         headers.put("password", 1);
+        headers.put("apiToken", 2);
 
         if (csvFile.length() == 0) {
             save();
@@ -57,7 +58,8 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
                     final String[] col = row.split(",");
                     final String username = String.valueOf(col[headers.get("username")]);
                     final String password = String.valueOf(col[headers.get("password")]);
-                    final User user = userFactory.create(username, password);
+                    final String apiToken = String.valueOf(col[headers.get("apiToken")]);
+                    final User user = userFactory.create(username, password, apiToken);
                     accounts.put(username, user);
                 }
             }
@@ -75,8 +77,8 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
             writer.newLine();
 
             for (User user : accounts.values()) {
-                final String line = String.format("%s,%s",
-                        user.getName(), user.getPassword());
+                final String line = String.format("%s,%s,%s",
+                        user.getName(), user.getPassword(), user.getApiToken());
                 writer.write(line);
                 writer.newLine();
             }

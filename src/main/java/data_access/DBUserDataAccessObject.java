@@ -25,6 +25,7 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
     private static final String STATUS_CODE_LABEL = "status_code";
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
+    private static final String API_TOKEN = "apiToken";
     private static final String MESSAGE = "message";
     private final UserFactory userFactory;
 
@@ -51,8 +52,9 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
                 final JSONObject userJSONObject = responseBody.getJSONObject("user");
                 final String name = userJSONObject.getString(USERNAME);
                 final String password = userJSONObject.getString(PASSWORD);
+                final String apiToken = userJSONObject.getString(API_TOKEN);
 
-                return userFactory.create(name, password);
+                return userFactory.create(name, password, apiToken);
             }
             else {
                 throw new RuntimeException(responseBody.getString(MESSAGE));
@@ -104,6 +106,7 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
         final JSONObject requestBody = new JSONObject();
         requestBody.put(USERNAME, user.getName());
         requestBody.put(PASSWORD, user.getPassword());
+        requestBody.put(API_TOKEN, user.getApiToken());
         final RequestBody body = RequestBody.create(requestBody.toString(), mediaType);
         final Request request = new Request.Builder()
                 .url("http://vm003.teach.cs.toronto.edu:20112/user")
@@ -137,6 +140,7 @@ public class DBUserDataAccessObject implements SignupUserDataAccessInterface,
         final JSONObject requestBody = new JSONObject();
         requestBody.put(USERNAME, user.getName());
         requestBody.put(PASSWORD, user.getPassword());
+        requestBody.put(API_TOKEN, user.getApiToken());
         final RequestBody body = RequestBody.create(requestBody.toString(), mediaType);
         final Request request = new Request.Builder()
                                     .url("http://vm003.teach.cs.toronto.edu:20112/user")
