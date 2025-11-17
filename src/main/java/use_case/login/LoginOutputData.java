@@ -6,13 +6,18 @@ package use_case.login;
 public class LoginOutputData {
 
     private final String username;
+    private final String apiToken;
 
-    public LoginOutputData(String username) {
+    public LoginOutputData(String username, String apiToken) {
         this.username = username;
+        this.apiToken = apiToken;
     }
 
     public String getUsername() {
         return username;
     }
 
+    public String getApiToken() {
+        return apiToken;
+    }
 }
