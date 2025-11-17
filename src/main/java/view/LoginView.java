@@ -34,22 +34,28 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
     private LoginController loginController = null;
 
     public LoginView(LoginViewModel loginViewModel) {
-
         this.loginViewModel = loginViewModel;
         this.loginViewModel.addPropertyChangeListener(this);
 
         final JLabel title = new JLabel("Login Screen");
+        title.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 24f));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        final LabelTextPanel usernameInfo = new LabelTextPanel(
-                new JLabel("Username"), usernameInputField);
+        final JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+        final JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+
+        final LabelTextPanel usernameInfo = new LabelTextPanel(usernameLabel, usernameInputField);
         final LabelTextPanel passwordInfo = new LabelTextPanel(
-                new JLabel("Password"), passwordInputField);
+                passwordLabel, passwordInputField);
 
         final JPanel buttons = new JPanel();
         logIn = new JButton("log in");
+        logIn.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(logIn);
         cancel = new JButton("cancel");
+        cancel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(cancel);
 
         ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
