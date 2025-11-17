@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 
 /**
  * The View for the Signup Use Case.
@@ -51,6 +52,8 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
         buttons.add(cancel);
 
+        SignupView.ImagePanel background = new SignupView.ImagePanel("/images/LoginScreenBackground.png");
+
         signUp.addActionListener(
                 // This creates an anonymous subclass of ActionListener and instantiates it.
                 new ActionListener() {
@@ -84,11 +87,12 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        this.add(title);
-        this.add(usernameInfo);
-        this.add(passwordInfo);
-        this.add(repeatPasswordInfo);
-        this.add(buttons);
+        this.add(background);
+        background.add(title);
+        background.add(usernameInfo);
+        background.add(passwordInfo);
+        background.add(repeatPasswordInfo);
+        background.add(buttons);
     }
 
     private void addUsernameListener() {
@@ -189,5 +193,44 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
     public void setSignupController(SignupController controller) {
         this.signupController = controller;
+    }
+
+    public class ImagePanel extends JPanel {
+
+        private Image backgroundImage;
+
+        public ImagePanel(String imagePath) {
+            // Load the image from the resources folder
+            try {
+                // The leading "/" searches from the root of the resources folder
+                URL imageURL = getClass().getResource(imagePath);
+
+                if (imageURL != null) {
+                    this.backgroundImage = new ImageIcon(imageURL).getImage();
+                } else {
+                    System.err.println("Couldn't find background image: " + imagePath);
+                    this.backgroundImage = null;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.backgroundImage = null;
+            }
+        }
+
+        /**
+         * This is the magic method that paints the component.
+         */
+        @Override
+        protected void paintComponent(Graphics g) {
+            // Call the superclass method first to paint the panel's base
+            super.paintComponent(g);
+
+            // Draw the background image
+            if (backgroundImage != null) {
+                // This command draws the image, stretching it to fill the
+                // entire panel (getWidth() and getHeight())
+                g.drawImage(backgroundImage, 0, 0, this.getWidth(), this.getHeight(), this);
+            }
+        }
     }
 }
