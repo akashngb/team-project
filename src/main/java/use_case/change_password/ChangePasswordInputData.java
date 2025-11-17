@@ -7,10 +7,12 @@ public class ChangePasswordInputData {
 
     private final String password;
     private final String username;
+    private final String apiToken;
 
-    public ChangePasswordInputData(String password, String username) {
+    public ChangePasswordInputData(String password, String username, String apiToken) {
         this.password = password;
         this.username = username;
+        this.apiToken = apiToken;
     }
 
     String getPassword() {
@@ -20,5 +22,7 @@ public class ChangePasswordInputData {
     String getUsername() {
         return username;
     }
+
+    String getApiToken() { return apiToken; }
 
 }
