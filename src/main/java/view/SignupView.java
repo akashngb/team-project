@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 
 /**
  * The View for the Signup Use Case.
@@ -51,6 +52,15 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
         buttons.add(cancel);
 
+        ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+
+        title.setOpaque(false);
+        usernameInfo.setOpaque(false);
+        passwordInfo.setOpaque(false);
+        repeatPasswordInfo.setOpaque(false);
+        buttons.setOpaque(false);
+
         signUp.addActionListener(
                 // This creates an anonymous subclass of ActionListener and instantiates it.
                 new ActionListener() {
@@ -84,11 +94,12 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        this.add(title);
-        this.add(usernameInfo);
-        this.add(passwordInfo);
-        this.add(repeatPasswordInfo);
-        this.add(buttons);
+        this.add(background);
+        background.add(title);
+        background.add(usernameInfo);
+        background.add(passwordInfo);
+        background.add(repeatPasswordInfo);
+        background.add(buttons);
     }
 
     private void addUsernameListener() {
