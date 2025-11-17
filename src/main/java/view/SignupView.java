@@ -23,6 +23,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
     private final JTextField usernameInputField = new JTextField(15);
     private final JPasswordField passwordInputField = new JPasswordField(15);
     private final JPasswordField repeatPasswordInputField = new JPasswordField(15);
+    private final JTextField apiTokenInputField = new JTextField(15);
     private SignupController signupController = null;
 
     private final JButton signUp;
@@ -42,6 +43,8 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                 new JLabel(SignupViewModel.PASSWORD_LABEL), passwordInputField);
         final LabelTextPanel repeatPasswordInfo = new LabelTextPanel(
                 new JLabel(SignupViewModel.REPEAT_PASSWORD_LABEL), repeatPasswordInputField);
+        final LabelTextPanel apiTokenInfo = new LabelTextPanel(
+                new JLabel(SignupViewModel.API_TOKEN_LABEL), apiTokenInputField);
 
         final JPanel buttons = new JPanel();
         toLogin = new JButton(SignupViewModel.TO_LOGIN_BUTTON_LABEL);
@@ -61,7 +64,8 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                             signupController.execute(
                                     currentState.getUsername(),
                                     currentState.getPassword(),
-                                    currentState.getRepeatPassword()
+                                    currentState.getRepeatPassword(),
+                                    currentState.getApiToken()
                             );
                         }
                     }
@@ -81,6 +85,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         addUsernameListener();
         addPasswordListener();
         addRepeatPasswordListener();
+        addApiTokenListener();
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -88,6 +93,7 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         this.add(usernameInfo);
         this.add(passwordInfo);
         this.add(repeatPasswordInfo);
+        this.add(apiTokenInfo);
         this.add(buttons);
     }
 
@@ -166,6 +172,26 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
             public void changedUpdate(DocumentEvent e) {
                 documentListenerHelper();
             }
+        });
+    }
+
+    private void addApiTokenListener() {
+        apiTokenInputField.getDocument().addDocumentListener(new DocumentListener() {
+
+            private void documentListenerHelper() {
+                final SignupState currentState = signupViewModel.getState();
+                currentState.setApiToken(apiTokenInputField.getText());
+                signupViewModel.setState(currentState);
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) { documentListenerHelper(); }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) { documentListenerHelper(); }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) { documentListenerHelper(); }
         });
     }
 
