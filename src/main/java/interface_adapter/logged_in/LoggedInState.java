@@ -9,13 +9,10 @@ public class LoggedInState {
     private String password = "";
     private String passwordError;
 
-    private String apiToken = "";
-
     public LoggedInState(LoggedInState copy) {
         username = copy.username;
         password = copy.password;
         passwordError = copy.passwordError;
-        apiToken = copy.apiToken;
     }
 
     // Because of the previous copy constructor, the default constructor must be explicit.
@@ -46,8 +43,4 @@ public class LoggedInState {
     public String getPasswordError() {
         return passwordError;
     }
-
-    public String getApiToken() { return apiToken; }
-
-    public void setApiToken(String apiToken) { this.apiToken = apiToken; }
 }

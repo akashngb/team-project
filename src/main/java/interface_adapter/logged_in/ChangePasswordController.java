@@ -17,10 +17,9 @@ public class ChangePasswordController {
      * Executes the Change Password Use Case.
      * @param password the new password
      * @param username the user whose password to change
-     * @param apiToken the API token
      */
-    public void execute(String password, String username, String apiToken) {
-        final ChangePasswordInputData changePasswordInputData = new ChangePasswordInputData(username, password, apiToken);
+    public void execute(String password, String username) {
+        final ChangePasswordInputData changePasswordInputData = new ChangePasswordInputData(username, password);
 
         userChangePasswordUseCaseInteractor.execute(changePasswordInputData);
     }
