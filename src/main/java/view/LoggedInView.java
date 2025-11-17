@@ -96,9 +96,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
                         this.changePasswordController.execute(
                                 currentState.getUsername(),
-                                currentState.getPassword(),
-                                currentState.getApiToken()
-                        );
+                                currentState.getPassword());
                     }
                 }
         );

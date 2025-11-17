@@ -8,13 +8,11 @@ public class SignupInputData {
     private final String username;
     private final String password;
     private final String repeatPassword;
-    private final String apiToken;
 
-    public SignupInputData(String username, String password, String repeatPassword, String apiToken) {
+    public SignupInputData(String username, String password, String repeatPassword) {
         this.username = username;
         this.password = password;
         this.repeatPassword = repeatPassword;
-        this.apiToken = apiToken;
     }
 
     String getUsername() {
@@ -26,6 +24,4 @@ public class SignupInputData {
     }
 
     String getRepeatPassword() { return repeatPassword; }
-
-    String getApiToken() { return apiToken; }
 }

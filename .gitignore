@@ -36,3 +36,13 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Environment Variables & Secrets ###
+.env
+.env.local
+.env.*.local
+secrets.properties
+credentials.properties
+
+### MongoDB ###
+*.log

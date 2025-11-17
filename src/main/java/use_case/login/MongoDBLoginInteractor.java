@@ -1,16 +1,18 @@
 package use_case.login;
 
+import data_access.MongoDBUserDataAccessObject;
 import entity.User;
 
 /**
- * The Login Interactor.
+ * MongoDB-specific Login Interactor that properly handles BCrypt password verification.
+ * Use this instead of the regular LoginInteractor when using MongoDB.
  */
-public class LoginInteractor implements LoginInputBoundary {
-    private final LoginUserDataAccessInterface userDataAccessObject;
+public class MongoDBLoginInteractor implements LoginInputBoundary {
+    private final MongoDBUserDataAccessObject userDataAccessObject;
     private final LoginOutputBoundary loginPresenter;
 
-    public LoginInteractor(LoginUserDataAccessInterface userDataAccessInterface,
-                           LoginOutputBoundary loginOutputBoundary) {
+    public MongoDBLoginInteractor(MongoDBUserDataAccessObject userDataAccessInterface,
+                                   LoginOutputBoundary loginOutputBoundary) {
         this.userDataAccessObject = userDataAccessInterface;
         this.loginPresenter = loginOutputBoundary;
     }
@@ -19,18 +21,17 @@ public class LoginInteractor implements LoginInputBoundary {
     public void execute(LoginInputData loginInputData) {
         final String username = loginInputData.getUsername();
         final String password = loginInputData.getPassword();
+
         if (!userDataAccessObject.existsByName(username)) {
             loginPresenter.prepareFailView(username + ": Account does not exist.");
         }
         else {
-            final String pwd = userDataAccessObject.get(username).getPassword();
-            if (!password.equals(pwd)) {
+            // Use BCrypt to verify the password instead of direct comparison
+            if (!userDataAccessObject.verifyPassword(username, password)) {
                 loginPresenter.prepareFailView("Incorrect password for \"" + username + "\".");
             }
             else {
-
-                final User user = userDataAccessObject.get(loginInputData.getUsername());
-
+                final User user = userDataAccessObject.get(username);
                 userDataAccessObject.setCurrentUsername(username);
 
                 final LoginOutputData loginOutputData = new LoginOutputData(user.getName());
@@ -39,3 +40,4 @@ public class LoginInteractor implements LoginInputBoundary {
         }
     }
 }
+

@@ -1,6 +1,7 @@
 package app;
 
-import data_access.FileUserDataAccessObject;
+import data_access.SimpleMongoDBConfig;
+import data_access.MongoDBUserDataAccessObject;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.logged_in.ChangePasswordController;
@@ -18,8 +19,8 @@ import use_case.change_password.ChangePasswordInputBoundary;
 import use_case.change_password.ChangePasswordInteractor;
 import use_case.change_password.ChangePasswordOutputBoundary;
 import use_case.login.LoginInputBoundary;
-import use_case.login.LoginInteractor;
 import use_case.login.LoginOutputBoundary;
+import use_case.login.MongoDBLoginInteractor;
 import use_case.logout.LogoutInputBoundary;
 import use_case.logout.LogoutInteractor;
 import use_case.logout.LogoutOutputBoundary;
@@ -34,16 +35,24 @@ import view.ViewManager;
 import javax.swing.*;
 import java.awt.*;
 
-public class AppBuilder {
+/**
+ * AppBuilder configured to use MongoDB for user storage.
+ * This version uses BCrypt for password hashing.
+ */
+public class MongoAppBuilder {
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
     final UserFactory userFactory = new UserFactory();
     final ViewManagerModel viewManagerModel = new ViewManagerModel();
     ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // File-based data access implementation using local CSV storage
-    final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.csv", userFactory);
-
+    // MongoDB Data Access Object
+    final MongoDBUserDataAccessObject userDataAccessObject = new MongoDBUserDataAccessObject(
+            SimpleMongoDBConfig.CONNECTION_STRING,
+            SimpleMongoDBConfig.DATABASE_NAME,
+            SimpleMongoDBConfig.USERS_COLLECTION,
+            userFactory
+    );
 
     private SignupView signupView;
     private SignupViewModel signupViewModel;
@@ -52,32 +61,32 @@ public class AppBuilder {
     private LoggedInView loggedInView;
     private LoginView loginView;
 
-    public AppBuilder() {
+    public MongoAppBuilder() {
         cardPanel.setLayout(cardLayout);
     }
 
-    public AppBuilder addSignupView() {
+    public MongoAppBuilder addSignupView() {
         signupViewModel = new SignupViewModel();
         signupView = new SignupView(signupViewModel);
         cardPanel.add(signupView, signupView.getViewName());
         return this;
     }
 
-    public AppBuilder addLoginView() {
+    public MongoAppBuilder addLoginView() {
         loginViewModel = new LoginViewModel();
         loginView = new LoginView(loginViewModel);
         cardPanel.add(loginView, loginView.getViewName());
         return this;
     }
 
-    public AppBuilder addLoggedInView() {
+    public MongoAppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
         loggedInView = new LoggedInView(loggedInViewModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
 
-    public AppBuilder addSignupUseCase() {
+    public MongoAppBuilder addSignupUseCase() {
         final SignupOutputBoundary signupOutputBoundary = new SignupPresenter(viewManagerModel,
                 signupViewModel, loginViewModel);
         final SignupInputBoundary userSignupInteractor = new SignupInteractor(
@@ -88,10 +97,12 @@ public class AppBuilder {
         return this;
     }
 
-    public AppBuilder addLoginUseCase() {
+    public MongoAppBuilder addLoginUseCase() {
         final LoginOutputBoundary loginOutputBoundary = new LoginPresenter(viewManagerModel,
                 loggedInViewModel, loginViewModel);
-        final LoginInputBoundary loginInteractor = new LoginInteractor(
+
+        // Use MongoDB-specific login interactor that handles BCrypt
+        final LoginInputBoundary loginInteractor = new MongoDBLoginInteractor(
                 userDataAccessObject, loginOutputBoundary);
 
         LoginController loginController = new LoginController(loginInteractor);
@@ -99,9 +110,9 @@ public class AppBuilder {
         return this;
     }
 
-    public AppBuilder addChangePasswordUseCase() {
-        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new ChangePasswordPresenter(viewManagerModel,
-                loggedInViewModel);
+    public MongoAppBuilder addChangePasswordUseCase() {
+        final ChangePasswordOutputBoundary changePasswordOutputBoundary =
+                new ChangePasswordPresenter(viewManagerModel, loggedInViewModel);
 
         final ChangePasswordInputBoundary changePasswordInteractor =
                 new ChangePasswordInteractor(userDataAccessObject, changePasswordOutputBoundary, userFactory);
@@ -111,11 +122,7 @@ public class AppBuilder {
         return this;
     }
 
-    /**
-     * Adds the Logout Use Case to the application.
-     * @return this builder
-     */
-    public AppBuilder addLogoutUseCase() {
+    public MongoAppBuilder addLogoutUseCase() {
         final LogoutOutputBoundary logoutOutputBoundary = new LogoutPresenter(viewManagerModel,
                 loggedInViewModel, loginViewModel);
 
@@ -128,8 +135,13 @@ public class AppBuilder {
     }
 
     public JFrame build() {
-        final JFrame application = new JFrame("User Login Example");
+        final JFrame application = new JFrame("User Login - MongoDB");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        // Add shutdown hook to properly close MongoDB connection
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            userDataAccessObject.close();
+        }));
 
         application.add(cardPanel);
 
@@ -139,3 +151,4 @@ public class AppBuilder {
         return application;
     }
 }
+
