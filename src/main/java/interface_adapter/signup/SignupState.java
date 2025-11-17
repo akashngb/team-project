@@ -10,6 +10,8 @@ public class SignupState {
     private String passwordError;
     private String repeatPassword = "";
     private String repeatPasswordError;
+    private String apiToken = "";
+    private String apiTokenError;
 
     public String getUsername() {
         return username;
@@ -35,6 +37,10 @@ public class SignupState {
         return repeatPasswordError;
     }
 
+    public String getApiToken() { return apiToken; }
+
+    public String getApiTokenError() { return apiTokenError; }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -57,6 +63,14 @@ public class SignupState {
 
     public void setRepeatPasswordError(String repeatPasswordError) {
         this.repeatPasswordError = repeatPasswordError;
+    }
+
+    public void setApiToken(String apiToken) {
+        this.apiToken = apiToken;
+    }
+
+    public void setApiTokenError(String apiTokenError) {
+        this.apiTokenError = apiTokenError;
     }
 
     @Override
