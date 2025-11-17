@@ -52,7 +52,14 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
         buttons.add(cancel);
 
-        SignupView.ImagePanel background = new SignupView.ImagePanel("/images/LoginScreenBackground.png");
+        ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+
+        title.setOpaque(false);
+        usernameInfo.setOpaque(false);
+        passwordInfo.setOpaque(false);
+        repeatPasswordInfo.setOpaque(false);
+        buttons.setOpaque(false);
 
         signUp.addActionListener(
                 // This creates an anonymous subclass of ActionListener and instantiates it.

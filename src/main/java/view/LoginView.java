@@ -53,6 +53,13 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         buttons.add(cancel);
 
         ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+
+        title.setOpaque(false);
+        usernameInfo.setOpaque(false);
+        passwordInfo.setOpaque(false);
+        usernameErrorField.setOpaque(false);
+        buttons.setOpaque(false);
 
         logIn.addActionListener(
                 new ActionListener() {
