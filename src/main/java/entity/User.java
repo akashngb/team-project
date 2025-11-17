@@ -1,34 +1,28 @@
 package entity;
 
 /**
- * A simple entity representing a user. Users have a username, password and API token.
+ * A simple entity representing a user. Users have a username and password..
  */
 public class User {
 
     private final String name;
     private final String password;
-    private final String apiToken;
 
     /**
-     * Creates a new user with the given params.
+     * Creates a new user with the given non-empty name and non-empty password.
      * @param name the username
      * @param password the password
-     * @param apiToken the API token
-     * @throws IllegalArgumentException if any params are empty
+     * @throws IllegalArgumentException if the password or name are empty
      */
-    public User(String name, String password, String apiToken) {
+    public User(String name, String password) {
         if ("".equals(name)) {
             throw new IllegalArgumentException("Username cannot be empty");
         }
         if ("".equals(password)) {
             throw new IllegalArgumentException("Password cannot be empty");
         }
-        if ("".equals(apiToken)) {
-            throw new IllegalArgumentException("API token cannot be empty");
-        }
         this.name = name;
         this.password = password;
-        this.apiToken = apiToken;
     }
 
     public String getName() {
@@ -39,5 +33,4 @@ public class User {
         return password;
     }
 
-    public String getApiToken() { return apiToken; }
 }
