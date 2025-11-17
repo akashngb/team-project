@@ -20,7 +20,7 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
                                                  ChangePasswordUserDataAccessInterface,
                                                  LogoutUserDataAccessInterface {
 
-    private static final String HEADER = "username,password,api_token";
+    private static final String HEADER = "username,password,apiToken";
 
     private final File csvFile;
     private final Map<String, Integer> headers = new LinkedHashMap<>();
