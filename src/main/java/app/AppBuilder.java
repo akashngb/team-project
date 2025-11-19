@@ -80,7 +80,7 @@ public class AppBuilder {
 
     public AppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
-        loggedInView = new LoggedInView(loggedInViewModel);
+        loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
@@ -137,7 +137,7 @@ public class AppBuilder {
 
     public AppBuilder addChessPuzzleView() {
         chessPuzzleViewModel = new ChessPuzzleViewModel();
-        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel);
+        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);  // Pass viewManagerModel
         cardPanel.add(chessPuzzleView, chessPuzzleView.getViewName());
         return this;
     }
