@@ -1,5 +1,7 @@
 package interface_adapter.blockblast;
 
+import entity.blockblast.Piece;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -10,11 +12,13 @@ public class BlockBlastViewModel {
     private int score;
     private boolean gameOver;
     private String message;
-    public void setState(boolean[][] board, int score, boolean gameOver, String message){
+    private Piece[] pieces;
+    public void setState(boolean[][] board, int score, boolean gameOver, String message, Piece[] pieces) {
         this.board = board;
         this.score = score;
         this.gameOver = gameOver;
         this.message = message;
+        this.pieces = pieces;
         support.firePropertyChange(BLOCKBLAST_PROPERTY, null, null);
     }
     public boolean[][] getBoard() {
@@ -29,8 +33,10 @@ public class BlockBlastViewModel {
     public String getMessage() {
         return message;
     }
+    public Piece[] getPieces() { return pieces; }
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         this.support.addPropertyChangeListener(listener);
     }
+
 }
 

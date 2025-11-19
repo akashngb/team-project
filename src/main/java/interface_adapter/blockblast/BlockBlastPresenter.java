@@ -2,9 +2,10 @@ package interface_adapter.blockblast;
 
 import entity.blockblast.Board;
 import entity.blockblast.GameState;
+import use_case.blockblast.PlacePieceOutputBoundary;
 import use_case.blockblast.PlacePieceResponseModel;
 
-public class BlockBlastPresenter {
+public class BlockBlastPresenter implements PlacePieceOutputBoundary {
     private final BlockBlastViewModel viewModel;
     public BlockBlastPresenter(BlockBlastViewModel viewModel){
         this.viewModel = viewModel;
@@ -24,9 +25,9 @@ public class BlockBlastPresenter {
             }
         }
 
-        viewModel.setState(boardCopy, endgamestate.getScore(), endgamestate.isGameOver(), "");
+        viewModel.setState(boardCopy, endgamestate.getScore(), endgamestate.isGameOver(), "", endgamestate.getCurrentPieces());
     }
     public void prepareFailView(String message){
-        viewModel.setState(viewModel.getBoard(), viewModel.getScore(), viewModel.isGameOver(), message);
+        viewModel.setState(viewModel.getBoard(), viewModel.getScore(), viewModel.isGameOver(), message, viewModel.getPieces());
     }
 }
