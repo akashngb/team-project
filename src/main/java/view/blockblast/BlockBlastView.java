@@ -132,29 +132,7 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener{
 
     public void drawPreviews(Graphics g) {
         Piece[] pieces = viewModel.getPieces();
-        if (pieces == null) return;
+        return;
 
-        int previewSize = 4 * 15;
-        int cell = 15;
-        int margin = 10;
-
-        for (int i = 0; i < pieces.length; i++) {
-            Piece p = pieces[i];
-            if (p == null) continue;
-
-            int baseX = margin + i * (previewSize + margin);
-            int baseY = 10;
-
-            if (i == selectedPieceIndex) {
-                g.drawRect(baseX - 3, baseY - 3, previewSize + 6, previewSize + 6);
-            }
-
-            p.getCells().forEach(pos -> {
-                int x = baseX + pos.col * cell;
-                int y = baseY + pos.row * cell;
-                g.drawRect(x, y, cell, cell);
-                g.fillRect(x + 1, y + 1, cell - 2, cell - 2);
-            });
-        }
     }
 }
