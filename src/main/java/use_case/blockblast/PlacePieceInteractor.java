@@ -48,7 +48,7 @@ public class PlacePieceInteractor implements PlacePieceInputBoundary {
             }
         }
         gameState.setCurrentPieces(pieces);
-        if (!ValidMove(gameState.getBoard(), gameState.getCurrentPieces())) {
+        if (!validMove(gameState.getBoard(), gameState.getCurrentPieces())) {
             gameState.setGameOver(true);
         }
     }
@@ -61,7 +61,7 @@ public class PlacePieceInteractor implements PlacePieceInputBoundary {
         return true;
     }
 
-    private boolean ValidMove(Board board, Piece[] pieces) {
+    private boolean validMove(Board board, Piece[] pieces) {
         for (Piece p : pieces) {
             if (p == null) continue;
             for (int r = 0; r < board.getRows(); r++) {
