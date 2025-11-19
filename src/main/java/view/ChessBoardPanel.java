@@ -1,5 +1,6 @@
 package view;
 
+import entity.ChessPuzzle;
 import entity.PuzzleMove;
 
 import javax.swing.*;
@@ -9,34 +10,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Panel that displays a draggable chess board with pieces.
+ * Panel that displays a draggable chess board.
  */
 public class ChessBoardPanel extends JPanel {
     private static final int BOARD_SIZE = 8;
-    private static final int SQUARE_SIZE = 80;
+    private static final int SQUARE_SIZE = 70;
     private static final Color LIGHT_SQUARE = new Color(240, 217, 181);
     private static final Color DARK_SQUARE = new Color(181, 136, 99);
-    private static final Color HIGHLIGHT_COLOR = new Color(186, 202, 68, 150);
-    private static final Color SELECTED_COLOR = new Color(246, 246, 130, 200);
+    private static final Color HIGHLIGHT_COLOR = new Color(255, 255, 0, 100);
 
     private String[][] board = new String[8][8];
-    private Point selectedSquare = null;
     private Point dragStart = null;
+    private Point dragEnd = null;
     private String draggedPiece = null;
-    private Point mousePos = null;
     private MoveListener moveListener;
 
     // Unicode chess pieces
     private static final Map<String, String> PIECE_SYMBOLS = new HashMap<>();
     static {
-        // White pieces
         PIECE_SYMBOLS.put("K", "♔");
         PIECE_SYMBOLS.put("Q", "♕");
         PIECE_SYMBOLS.put("R", "♖");
         PIECE_SYMBOLS.put("B", "♗");
         PIECE_SYMBOLS.put("N", "♘");
         PIECE_SYMBOLS.put("P", "♙");
-        // Black pieces
         PIECE_SYMBOLS.put("k", "♚");
         PIECE_SYMBOLS.put("q", "♛");
         PIECE_SYMBOLS.put("r", "♜");
@@ -51,7 +48,6 @@ public class ChessBoardPanel extends JPanel {
 
     public ChessBoardPanel() {
         setPreferredSize(new Dimension(SQUARE_SIZE * 8, SQUARE_SIZE * 8));
-        setBackground(new Color(48, 46, 43));
         initializeBoard();
         setupMouseListeners();
     }
@@ -81,17 +77,12 @@ public class ChessBoardPanel extends JPanel {
                 if (Character.isDigit(c)) {
                     file += Character.getNumericValue(c);
                 } else {
-                    if (file < 8 && rank < 8) {
-                        board[rank][file] = String.valueOf(c);
-                    }
+                    board[rank][file] = String.valueOf(c);
                     file++;
                 }
             }
         }
 
-        selectedSquare = null;
-        dragStart = null;
-        draggedPiece = null;
         repaint();
     }
 
@@ -105,10 +96,7 @@ public class ChessBoardPanel extends JPanel {
                 if (row >= 0 && row < 8 && col >= 0 && col < 8) {
                     if (!board[row][col].isEmpty()) {
                         dragStart = new Point(col, row);
-                        selectedSquare = new Point(col, row);
                         draggedPiece = board[row][col];
-                        mousePos = e.getPoint();
-                        repaint();
                     }
                 }
             }
@@ -120,7 +108,7 @@ public class ChessBoardPanel extends JPanel {
                     int row = e.getY() / SQUARE_SIZE;
 
                     if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-                        Point dragEnd = new Point(col, row);
+                        dragEnd = new Point(col, row);
 
                         if (!dragStart.equals(dragEnd)) {
                             makeMove(dragStart, dragEnd);
@@ -129,18 +117,14 @@ public class ChessBoardPanel extends JPanel {
                 }
 
                 dragStart = null;
-                selectedSquare = null;
+                dragEnd = null;
                 draggedPiece = null;
-                mousePos = null;
                 repaint();
             }
 
             @Override
             public void mouseDragged(MouseEvent e) {
-                if (draggedPiece != null) {
-                    mousePos = e.getPoint();
-                    repaint();
-                }
+                repaint();
             }
         };
 
@@ -176,88 +160,48 @@ public class ChessBoardPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // Draw board squares
+        // Draw board
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 Color squareColor = (row + col) % 2 == 0 ? LIGHT_SQUARE : DARK_SQUARE;
                 g2d.setColor(squareColor);
                 g2d.fillRect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
 
-                // Highlight selected square
-                if (selectedSquare != null && selectedSquare.x == col && selectedSquare.y == row) {
-                    g2d.setColor(SELECTED_COLOR);
+                // Highlight dragged square
+                if (dragStart != null && dragStart.x == col && dragStart.y == row) {
+                    g2d.setColor(HIGHLIGHT_COLOR);
                     g2d.fillRect(col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
                 }
 
-                // Draw file labels (a-h) on bottom
-                if (row == 7) {
-                    g2d.setColor((col % 2 == 0) ? DARK_SQUARE : LIGHT_SQUARE);
-                    g2d.setFont(new Font("Arial", Font.BOLD, 12));
-                    g2d.drawString(String.valueOf((char)('a' + col)),
-                            col * SQUARE_SIZE + SQUARE_SIZE - 15,
-                            row * SQUARE_SIZE + SQUARE_SIZE - 5);
-                }
-
-                // Draw rank labels (1-8) on left
-                if (col == 0) {
-                    g2d.setColor((row % 2 == 0) ? LIGHT_SQUARE : DARK_SQUARE);
-                    g2d.setFont(new Font("Arial", Font.BOLD, 12));
-                    g2d.drawString(String.valueOf(8 - row),
-                            col * SQUARE_SIZE + 5,
-                            row * SQUARE_SIZE + 15);
-                }
-
-                // Draw pieces (except the one being dragged)
-                if (!board[row][col].isEmpty()) {
-                    if (dragStart == null || dragStart.x != col || dragStart.y != row) {
-                        drawPiece(g2d, board[row][col],
-                                col * SQUARE_SIZE + SQUARE_SIZE/2,
-                                row * SQUARE_SIZE + SQUARE_SIZE/2);
-                    }
+                // Draw pieces
+                if (!board[row][col].isEmpty() &&
+                        !(dragStart != null && dragStart.x == col && dragStart.y == row)) {
+                    drawPiece(g2d, board[row][col], col * SQUARE_SIZE, row * SQUARE_SIZE);
                 }
             }
         }
 
-        // Draw dragged piece at mouse position
-        if (draggedPiece != null && mousePos != null) {
-            drawPiece(g2d, draggedPiece, mousePos.x, mousePos.y);
+        // Draw dragged piece
+        if (draggedPiece != null && dragStart != null) {
+            Point mouse = getMousePosition();
+            if (mouse != null) {
+                drawPiece(g2d, draggedPiece, mouse.x - SQUARE_SIZE/2, mouse.y - SQUARE_SIZE/2);
+            }
         }
     }
 
-    private void drawPiece(Graphics2D g2d, String piece, int centerX, int centerY) {
+    private void drawPiece(Graphics2D g2d, String piece, int x, int y) {
         String symbol = PIECE_SYMBOLS.get(piece);
         if (symbol != null) {
-            // Draw piece with shadow for better visibility
-            Font font = new Font("Serif", Font.PLAIN, 60);
-            g2d.setFont(font);
+            g2d.setFont(new Font("Serif", Font.PLAIN, 50));
+            g2d.setColor(Color.BLACK);
 
             FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(symbol);
-            int textHeight = fm.getHeight();
+            int textX = x + (SQUARE_SIZE - fm.stringWidth(symbol)) / 2;
+            int textY = y + ((SQUARE_SIZE - fm.getHeight()) / 2) + fm.getAscent();
 
-            int x = centerX - textWidth / 2;
-            int y = centerY + textHeight / 4;
-
-            // Draw shadow
-            g2d.setColor(new Color(0, 0, 0, 80));
-            g2d.drawString(symbol, x + 2, y + 2);
-
-            // Draw piece
-            if (Character.isUpperCase(piece.charAt(0))) {
-                // White pieces
-                g2d.setColor(Color.WHITE);
-                g2d.drawString(symbol, x, y);
-                g2d.setColor(Color.BLACK);
-                g2d.setStroke(new BasicStroke(1.5f));
-                // Draw outline
-                g2d.drawString(symbol, x, y);
-            } else {
-                // Black pieces
-                g2d.setColor(Color.BLACK);
-                g2d.drawString(symbol, x, y);
-            }
+            g2d.drawString(symbol, textX, textY);
         }
     }
 }
