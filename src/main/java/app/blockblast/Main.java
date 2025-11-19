@@ -18,7 +18,7 @@ public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
 
-            Board board = new Board(10, 10);
+            Board board = new Board(8,8);
             PieceGenerator pieceGenerator = new PieceGenerator();
 
             Piece[] pieces = new Piece[3];

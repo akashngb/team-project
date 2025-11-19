@@ -29,6 +29,11 @@ public class PlacePieceInteractor implements PlacePieceInputBoundary {
         int row = requestModel.getRow();
         int col = requestModel.getCol();
 
+        if (idx < 0 || idx >= pieces.length || pieces[idx] == null) {
+            presenter.prepareFailView("Invalid piece index");
+            return;
+        }
+
         Piece piece = pieces[idx];
         Board board = gameState.getBoard();
 
@@ -48,9 +53,12 @@ public class PlacePieceInteractor implements PlacePieceInputBoundary {
             }
         }
         gameState.setCurrentPieces(pieces);
+
         if (!validMove(gameState.getBoard(), gameState.getCurrentPieces())) {
             gameState.setGameOver(true);
         }
+
+        presenter.prepareSuccessView(new PlacePieceResponseModel(gameState));
     }
 
 
