@@ -1,4 +1,14 @@
 package interface_adapter.chess_puzzle;
 
-public class ChessPuzzleViewModel {
+import interface_adapter.ViewModel;
+
+/**
+ * View model for chess puzzles.
+ */
+public class ChessPuzzleViewModel extends ViewModel<ChessPuzzleState> {
+
+    public ChessPuzzleViewModel() {
+        super("chess puzzle");
+        setState(new ChessPuzzleState());
+    }
 }
