@@ -1,4 +1,8 @@
 package use_case.chess_puzzle;
 
-public class LoadPuzzlesInputBoundary {
+/**
+ * Input boundary for loading chess puzzles.
+ */
+public interface LoadPuzzlesInputBoundary {
+    void execute(LoadPuzzlesInputData inputData);
 }

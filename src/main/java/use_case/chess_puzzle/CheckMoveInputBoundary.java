@@ -1,4 +1,8 @@
 package use_case.chess_puzzle;
 
-public class CheckMoveInputBoundary {
+/**
+ * Input boundary for checking if a move is correct.
+ */
+public interface CheckMoveInputBoundary {
+    void execute(CheckMoveInputData inputData);
 }
