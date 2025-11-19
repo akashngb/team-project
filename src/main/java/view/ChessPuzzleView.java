@@ -64,7 +64,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(new Color(48, 46, 43));
 
-        JLabel titleLabel = new JLabel("Chess Puzzle");  // Changed from "Chess Puzzle Trainer"
+        JLabel titleLabel = new JLabel("Chess Puzzle");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -103,57 +103,70 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
     private JPanel createButtonPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        panel.setBackground(new Color(48, 46, 43));
+        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        panel.setBackground(new Color(60, 60, 60)); // Dark background
 
-        // Back button
-        JButton backButton = new JButton("← Back");
-        backButton.setFont(new Font("Arial", Font.BOLD, 14));
-        backButton.setBackground(new Color(70, 70, 70));
-        backButton.setForeground(Color.WHITE);
-        backButton.setFocusPainted(false);
-        backButton.addActionListener(e -> {
-            viewManagerModel.setState("logged in");
-            viewManagerModel.firePropertyChange();
+        // Load Puzzles Button
+        JButton loadButton = new JButton("Load Puzzles");
+        styleButton(loadButton, new Color(76, 175, 80)); // Green
+        loadButton.addActionListener(e -> {
+            System.out.println("Load Puzzles clicked!");
+            loadPuzzles();
         });
 
-        JButton loadButton = new JButton("Load Puzzles");
-        loadButton.setFont(new Font("Arial", Font.BOLD, 14));
-        loadButton.setBackground(new Color(129, 182, 76));
-        loadButton.setForeground(Color.WHITE);
-        loadButton.setFocusPainted(false);
-        loadButton.addActionListener(e -> loadPuzzles());
-
-        nextButton = new JButton("Next Puzzle");
-        nextButton.setFont(new Font("Arial", Font.BOLD, 14));
-        nextButton.setBackground(new Color(129, 182, 76));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setEnabled(false);
-        nextButton.setFocusPainted(false);
-        nextButton.addActionListener(e -> nextPuzzle());
-
-        solutionButton = new JButton("View Solution");
-        solutionButton.setFont(new Font("Arial", Font.BOLD, 14));
-        solutionButton.setBackground(new Color(204, 119, 34));
-        solutionButton.setForeground(Color.WHITE);
-        solutionButton.setEnabled(false);
-        solutionButton.setFocusPainted(false);
-        solutionButton.addActionListener(e -> showSolution());
-
+        // Reset Button
         JButton resetButton = new JButton("Reset Puzzle");
-        resetButton.setFont(new Font("Arial", Font.BOLD, 14));
-        resetButton.setBackground(new Color(70, 70, 70));
-        resetButton.setForeground(Color.WHITE);
-        resetButton.setFocusPainted(false);
-        resetButton.addActionListener(e -> resetPuzzle());
+        styleButton(resetButton, new Color(33, 150, 243)); // Blue
+        resetButton.addActionListener(e -> {
+            System.out.println("Reset clicked!");
+            resetPuzzle();
+        });
 
-        panel.add(backButton);
+        // Solution Button
+        solutionButton = new JButton("View Solution");
+        styleButton(solutionButton, new Color(255, 152, 0)); // Orange
+        solutionButton.setEnabled(false);
+        solutionButton.addActionListener(e -> {
+            System.out.println("View Solution clicked!");
+            showSolution();
+        });
+
+        // Next Button
+        nextButton = new JButton("Next Puzzle");
+        styleButton(nextButton, new Color(156, 39, 176)); // Purple
+        nextButton.setEnabled(false);
+        nextButton.addActionListener(e -> {
+            System.out.println("Next Puzzle clicked!");
+            nextPuzzle();
+        });
+
         panel.add(loadButton);
         panel.add(resetButton);
         panel.add(solutionButton);
         panel.add(nextButton);
 
         return panel;
+    }
+
+    private void styleButton(JButton button, Color bgColor) {
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setPreferredSize(new Dimension(140, 45));
+        button.setBackground(bgColor);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor.brighter());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+            }
+        });
     }
 
     private void handleMove(PuzzleMove move) {
@@ -166,7 +179,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
     private void loadPuzzles() {
         if (loadPuzzlesController != null) {
-            feedbackLabel.setText("Loading puzzles...");
+            feedbackLabel.setText("Puzzle Loaded Successfully!");
             feedbackLabel.setForeground(new Color(129, 182, 76));
             moveQualityLabel.setText("");
             loadPuzzlesController.execute(25, 1500);
@@ -286,7 +299,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
                 currentMoveIndex = Math.max(0, currentMoveIndex - 1);
             }
         } else if (evt.getPropertyName().equals("puzzle_solved")) {
-            feedbackLabel.setText("Puzzle Solved! 🎉");
+            feedbackLabel.setText("Puzzle Solved!");
             feedbackLabel.setForeground(new Color(255, 215, 0));
             moveQualityLabel.setText("★★★ Perfect!");
             moveQualityLabel.setForeground(new Color(255, 215, 0));
