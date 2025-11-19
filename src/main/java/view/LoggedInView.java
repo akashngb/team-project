@@ -13,10 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 
-/**
- * The View for when the user is logged into the program.
- */
 public class LoggedInView extends JPanel implements ActionListener, PropertyChangeListener {
 
     private final String viewName = "logged in";
@@ -28,41 +26,59 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private final JLabel username;
 
     private final JButton logOut;
-
     private final JTextField passwordInputField = new JTextField(15);
     private final JButton changePassword;
 
+    // ✅ Background image
+    private Image backgroundImage;
+
     public LoggedInView(LoggedInViewModel loggedInViewModel) {
+
+        // ---- Load Background Image ----
+        URL bgUrl = getClass().getResource("/images/LoginScreenBackground.png");
+        if (bgUrl == null) {
+            System.err.println("ERROR: Background image not found at /images/LoginScreenBackground.png");
+        } else {
+            backgroundImage = new ImageIcon(bgUrl).getImage();
+        }
+        // --------------------------------
+
         this.loggedInViewModel = loggedInViewModel;
         this.loggedInViewModel.addPropertyChangeListener(this);
 
         final JLabel title = new JLabel("Logged In Screen");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        title.setFont(new Font("Arial", Font.BOLD, 26));
+        title.setForeground(Color.BLACK);
 
         final LabelTextPanel passwordInfo = new LabelTextPanel(
                 new JLabel("Password"), passwordInputField);
 
         final JLabel usernameInfo = new JLabel("Currently logged in: ");
+        usernameInfo.setForeground(Color.BLACK);
+
         username = new JLabel();
+        username.setForeground(Color.BLACK);
 
         final JPanel buttons = new JPanel();
-        logOut = new JButton("Log Out");
-        buttons.add(logOut);
+        buttons.setOpaque(false); // Make buttons panel transparent so BG shows
 
+        logOut = new JButton("Log Out");
         changePassword = new JButton("Change Password");
+
+        buttons.add(logOut);
         buttons.add(changePassword);
 
         logOut.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        if (evt.getSource().equals(logOut)) {
-                            logoutController.execute();
-                        }
+                evt -> {
+                    if (evt.getSource().equals(logOut)) {
+                        logoutController.execute();
                     }
                 }
         );
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setOpaque(false);
 
         passwordInputField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -73,27 +89,19 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             }
 
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                documentListenerHelper();
-            }
+            public void insertUpdate(DocumentEvent e) { documentListenerHelper(); }
 
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                documentListenerHelper();
-            }
+            public void removeUpdate(DocumentEvent e) { documentListenerHelper(); }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {
-                documentListenerHelper();
-            }
+            public void changedUpdate(DocumentEvent e) { documentListenerHelper(); }
         });
 
         changePassword.addActionListener(
-                // This creates an anonymous subclass of ActionListener and instantiates it.
                 evt -> {
                     if (evt.getSource().equals(changePassword)) {
                         final LoggedInState currentState = loggedInViewModel.getState();
-
                         this.changePasswordController.execute(
                                 currentState.getUsername(),
                                 currentState.getPassword());
@@ -101,19 +109,31 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
                 }
         );
 
+        // Add components
+        this.add(Box.createRigidArea(new Dimension(0, 40)));
         this.add(title);
+        this.add(Box.createRigidArea(new Dimension(0, 20)));
         this.add(usernameInfo);
         this.add(username);
-
+        this.add(Box.createRigidArea(new Dimension(0, 20)));
         this.add(passwordInfo);
         this.add(passwordErrorField);
+        this.add(Box.createRigidArea(new Dimension(0, 20)));
         this.add(buttons);
     }
 
     /**
-     * React to a button click that results in evt.
-     * @param evt the ActionEvent to react to
+     * Draw background image
      */
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
+    }
+
     public void actionPerformed(ActionEvent evt) {
         System.out.println("Click " + evt.getActionCommand());
     }
@@ -134,7 +154,6 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
                 JOptionPane.showMessageDialog(this, state.getPasswordError());
             }
         }
-
     }
 
     public String getViewName() {
