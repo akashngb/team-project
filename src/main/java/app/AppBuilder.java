@@ -28,6 +28,16 @@ import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
 import view.*;
 import view.FontLoader;
+// Wordle imports
+import data_access.wordle.FileWordListDataAccess;
+import data_access.wordle.InMemoryGameSessionGateway;
+import interface_adapter.wordle.WordleController;
+import interface_adapter.wordle.WordlePresenter;
+import interface_adapter.wordle.WordleViewModel;
+import use_case.wordle.StartGameInteractor;
+import use_case.wordle.SubmitGuessInteractor;
+import wordle.WordleView;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,6 +60,12 @@ public class AppBuilder {
     private LoggedInView loggedInView;
     private LoginView loginView;
 
+    //Wordle views
+    private WordleView wordleView;
+    private WordleViewModel wordleViewModel;
+    private WordleController wordleController;
+
+
     public AppBuilder() {
         FontLoader.loadFonts();
         cardPanel.setLayout(cardLayout);
@@ -71,7 +87,7 @@ public class AppBuilder {
 
     public AppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
-        loggedInView = new LoggedInView(loggedInViewModel);
+        loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
@@ -123,6 +139,33 @@ public class AppBuilder {
 
         final LogoutController logoutController = new LogoutController(logoutInteractor);
         loggedInView.setLogoutController(logoutController);
+        return this;
+    }
+
+    public AppBuilder addWordleFeature() {
+        // Data access
+        FileWordListDataAccess wordListDao = new FileWordListDataAccess();
+        InMemoryGameSessionGateway sessionGateway = new InMemoryGameSessionGateway();
+
+        // ViewModel
+        wordleViewModel = new WordleViewModel(java.util.Collections.emptyList(), 6, false, false, null, "");
+
+        // Presenter
+        WordlePresenter wordlePresenter = new WordlePresenter(vm -> {
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
+
+        // Interactors
+        StartGameInteractor startGameInteractor = new StartGameInteractor(wordListDao, sessionGateway, wordlePresenter);
+        SubmitGuessInteractor submitGuessInteractor = new SubmitGuessInteractor(wordListDao, sessionGateway, wordlePresenter);
+
+        // Controller
+        wordleController = new WordleController(startGameInteractor, submitGuessInteractor);
+
+        // View
+        wordleView = new WordleView(wordleController, vm -> {}); // presenter updates via lambda above
+        cardPanel.add(wordleView, "WORDLE");
+
         return this;
     }
 
