@@ -1,10 +1,12 @@
 package app;
 
 import javax.swing.*;
+import view.FontLoader;
 
 public class MainMongoDB {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            FontLoader.loadFonts();
             MongoAppBuilder appBuilder = new MongoAppBuilder();
             JFrame application = appBuilder
                     .addLoginView()
@@ -14,6 +16,7 @@ public class MainMongoDB {
                     .addLoginUseCase()
                     .addLogoutUseCase()
                     .addChangePasswordUseCase()
+                    .addWordleFeature()
                     .build();
 
             application.pack();
