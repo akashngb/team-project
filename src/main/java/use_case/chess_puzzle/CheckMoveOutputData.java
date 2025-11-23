@@ -7,11 +7,13 @@ public class CheckMoveOutputData {
     private final String feedback;
     private final boolean isCorrect;
     private final boolean puzzleSolved;
+    private final String computerMove;  // Add this field
 
-    public CheckMoveOutputData(String feedback, boolean isCorrect, boolean puzzleSolved) {
+    public CheckMoveOutputData(String feedback, boolean isCorrect, boolean puzzleSolved, String computerMove) {
         this.feedback = feedback;
         this.isCorrect = isCorrect;
         this.puzzleSolved = puzzleSolved;
+        this.computerMove = computerMove;
     }
 
     public String getFeedback() {
@@ -24,5 +26,9 @@ public class CheckMoveOutputData {
 
     public boolean isPuzzleSolved() {
         return puzzleSolved;
+    }
+
+    public String getComputerMove() {
+        return computerMove;
     }
 }

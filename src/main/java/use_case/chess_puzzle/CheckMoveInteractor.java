@@ -41,13 +41,31 @@ public class CheckMoveInteractor implements CheckMoveInputBoundary {
         if (playerMove.equals(correctMove)) {
             currentMoveIndex++;
 
-            if (currentMoveIndex >= solution.size()) {
-                presenter.presentPuzzleSolved();
+            // Check if there's a computer response move
+            if (currentMoveIndex < solution.size()) {
+                String computerMove = solution.get(currentMoveIndex);
+                currentMoveIndex++;
+
+                // Check if puzzle is now solved
+                if (currentMoveIndex >= solution.size()) {
+                    CheckMoveOutputData outputData = new CheckMoveOutputData(
+                            "Correct! Puzzle solved!", true, true, computerMove
+                    );
+                    presenter.presentCorrectMove(outputData);
+                    presenter.presentPuzzleSolved();
+                } else {
+                    CheckMoveOutputData outputData = new CheckMoveOutputData(
+                            "Correct! Continue...", true, false, computerMove
+                    );
+                    presenter.presentCorrectMove(outputData);
+                }
             } else {
+                // No computer response, puzzle solved
                 CheckMoveOutputData outputData = new CheckMoveOutputData(
-                        "Correct! Continue...", true, false
+                        "Correct! Puzzle solved!", true, true, null
                 );
                 presenter.presentCorrectMove(outputData);
+                presenter.presentPuzzleSolved();
             }
         } else {
             presenter.presentIncorrectMove("Incorrect move. Try again!");
@@ -56,5 +74,9 @@ public class CheckMoveInteractor implements CheckMoveInputBoundary {
 
     public void reset() {
         this.currentMoveIndex = 0;
+    }
+
+    public int getCurrentMoveIndex() {
+        return currentMoveIndex;
     }
 }

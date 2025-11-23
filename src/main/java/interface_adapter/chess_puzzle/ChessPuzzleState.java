@@ -77,8 +77,20 @@ public class ChessPuzzleState {
             currentPuzzleIndex++;
             feedback = "";
             showSolution = false;
+            computerMove = null;  // Reset computer move
         }
     }
+
+    private String computerMove = null;
+
+    public String getComputerMove() {
+        return computerMove;
+    }
+
+    public void setComputerMove(String computerMove) {
+        this.computerMove = computerMove;
+    }
+
 
     public boolean hasNextPuzzle() {
         return currentPuzzleIndex < puzzles.size() - 1;
