@@ -28,11 +28,43 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private LogoutController logoutController;
 
     // New buttons for the menu options
-    private final JButton menuButton1;
-    private final JButton menuButton2;
-    private final JButton menuButton3;
-    private final JButton logOut; // Keep the Log Out button
-    private final ImagePanel background;
+    private final JButton blockBlastButton;
+    private final JButton wordleButton;
+    private final JButton chessButton;
+    private final JButton logOutButton; // Keep the Log Out button
+    private final ImagePanel backgroundScreen;
+    private JButton currentlySelectedButton;
+
+    private JButton createGameButton(String gameName, String imagePath, Font gameTitleFont) {
+        // Load the image resource
+        URL imageUrl = getClass().getResource(imagePath);
+        ImageIcon icon = new ImageIcon(imageUrl);
+        icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
+
+        // Create the title label
+        JLabel image = new JLabel(icon);
+        JLabel title = new JLabel(gameName, SwingConstants.CENTER);
+        title.setFont(gameTitleFont);
+
+        // Create the content panel (Image + Title)
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.add(image, BorderLayout.CENTER);
+        contentPanel.add(title, BorderLayout.SOUTH);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        contentPanel.setOpaque(false);
+
+        // Create the transparent button wrapper
+        JButton button = new JButton();
+        button.setLayout(new BorderLayout());
+        button.add(contentPanel, BorderLayout.CENTER);
+        button.setOpaque(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        return button;
+    }
 
     public LoggedInView(LoggedInViewModel loggedInViewModel) {
         this.loggedInViewModel = loggedInViewModel;
@@ -50,93 +82,28 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         title.setOpaque(false);
         // Game Panels and Buttons
 
-        // Game 1: Block Blast
-        URL blockBlastImageUrl = getClass().getResource("/images/blockblast.png");
-        ImageIcon blockBlastIcon = new ImageIcon(blockBlastImageUrl);
-        blockBlastIcon = new ImageIcon(blockBlastIcon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH)); // Scale image
-        JLabel blockBlastImage = new JLabel(blockBlastIcon);
-        JLabel blockBlastTitle = new JLabel("Block Blast", SwingConstants.CENTER);
-        blockBlastTitle.setFont(gameTitleFont);
+        blockBlastButton = createGameButton("Block Blast", "/images/blockblast.png", gameTitleFont);
+        wordleButton = createGameButton("Wordle", "/images/wordle.png", gameTitleFont);
+        chessButton = createGameButton("Chess Puzzles", "/images/chess.png", gameTitleFont);
 
-        JPanel blockBlastPanel = new JPanel();
-        blockBlastPanel.setLayout(new BorderLayout()); // Use BorderLayout for image and text
-        blockBlastPanel.add(blockBlastImage, BorderLayout.CENTER);
-        blockBlastPanel.add(blockBlastTitle, BorderLayout.SOUTH);
-        blockBlastPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add some padding
-        blockBlastPanel.setOpaque(false);
-        // Make the panel clickable
-        menuButton1 = new JButton(); // Use a JButton for click functionality
-        menuButton1.setLayout(new BorderLayout());
-        menuButton1.add(blockBlastPanel, BorderLayout.CENTER); // Add the content panel to the button
-        menuButton1.setOpaque(false); // Make button transparent to show panel background
-        menuButton1.setContentAreaFilled(false);
-        menuButton1.setBorderPainted(false);
-        menuButton1.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Indicate it's clickable
-
-
-        // Game 2: Wordle
-        URL wordleImageUrl = getClass().getResource("/images/wordle.png");
-        ImageIcon wordleIcon = new ImageIcon(wordleImageUrl);
-        wordleIcon = new ImageIcon(wordleIcon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
-        JLabel wordleImage = new JLabel(wordleIcon);
-        JLabel wordleTitle = new JLabel("Wordle", SwingConstants.CENTER);
-        wordleTitle.setFont(gameTitleFont);
-
-        JPanel wordlePanel = new JPanel();
-        wordlePanel.setLayout(new BorderLayout());
-        wordlePanel.add(wordleImage, BorderLayout.CENTER);
-        wordlePanel.add(wordleTitle, BorderLayout.SOUTH);
-        wordlePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        wordlePanel.setOpaque(false);
-
-        menuButton2 = new JButton();
-        menuButton2.setLayout(new BorderLayout());
-        menuButton2.add(wordlePanel, BorderLayout.CENTER);
-        menuButton2.setOpaque(false);
-        menuButton2.setContentAreaFilled(false);
-        menuButton2.setBorderPainted(false);
-        menuButton2.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-
-        // Game 3: Chess Puzzles
-        URL chessImageUrl = getClass().getResource("/images/chess.png");
-        ImageIcon chessIcon = new ImageIcon(chessImageUrl);
-        chessIcon = new ImageIcon(chessIcon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
-        JLabel chessImage = new JLabel(chessIcon);
-        JLabel chessTitle = new JLabel("Chess Puzzles", SwingConstants.CENTER);
-        chessTitle.setFont(gameTitleFont);
-
-        JPanel chessPanel = new JPanel();
-        chessPanel.setLayout(new BorderLayout());
-        chessPanel.add(chessImage, BorderLayout.CENTER);
-        chessPanel.add(chessTitle, BorderLayout.SOUTH);
-        chessPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        chessPanel.setOpaque(false);
-
-        menuButton3 = new JButton();
-        menuButton3.setLayout(new BorderLayout());
-        menuButton3.add(chessPanel, BorderLayout.CENTER);
-        menuButton3.setOpaque(false);
-        menuButton3.setContentAreaFilled(false);
-        menuButton3.setBorderPainted(false);
-        menuButton3.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        currentlySelectedButton = blockBlastButton;
 
         // Log Out Button (retained and styled)
-        logOut = new JButton("Log Out");
-        logOut.setFont(buttonFont);
-        logOut.setOpaque(false);
+        logOutButton = new JButton("Log Out");
+        logOutButton.setFont(buttonFont);
+        logOutButton.setOpaque(false);
 
-        background = new ImagePanel("/images/LoginScreenBackground.png");
+        backgroundScreen = new ImagePanel("/images/blockblast_background.png");
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+        backgroundScreen.setLayout(new BoxLayout(backgroundScreen, BoxLayout.Y_AXIS));
 
-        this.add(background);
+        this.add(backgroundScreen);
 
         // Horizontal Layout for Game Selection Panels
         final JPanel gameSelectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // Center with more horizontal gap
-        gameSelectionPanel.add(menuButton1); // Now these are the clickable game panels
-        gameSelectionPanel.add(menuButton2);
-        gameSelectionPanel.add(menuButton3);
+        gameSelectionPanel.add(blockBlastButton); // Now these are the clickable game panels
+        gameSelectionPanel.add(wordleButton);
+        gameSelectionPanel.add(chessButton);
         gameSelectionPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         gameSelectionPanel.setOpaque(false);
         // Main Content Panel (Vertical Stacking)
@@ -146,19 +113,19 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
         contentPanel.add(gameSelectionPanel);
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40))); // More space before Log Out
-        contentPanel.add(logOut);
-        logOut.setAlignmentX(Component.CENTER_ALIGNMENT); // Ensure log out button is centered
+        contentPanel.add(logOutButton);
+        logOutButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Ensure log out button is centered
 
         // Add Action Listeners
-        menuButton1.addActionListener(this);
-        menuButton2.addActionListener(this);
-        menuButton3.addActionListener(this);
+        blockBlastButton.addActionListener(this);
+        wordleButton.addActionListener(this);
+        chessButton.addActionListener(this);
 
         // Action Listener for Log Out
-        logOut.addActionListener(
+        logOutButton.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        if (evt.getSource().equals(logOut)) {
+                        if (evt.getSource().equals(logOutButton)) {
                             if (logoutController != null) {
                                 logoutController.execute();
                             }
@@ -170,58 +137,61 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
         // Define the default border only (no need for a static hoverBorder)
         final Border defaultBorder = BorderFactory.createEmptyBorder();
-        final String defaultBackgroundPath = "/images/LoginScreenBackground.png";
+        final String defaultBackgroundPath = "/images/blockblast_background.png";
         MouseAdapter hoverAdapter = new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 JButton button = (JButton) e.getSource();
                 String newBackgroundPath = defaultBackgroundPath;
 
-                if (button.equals(menuButton1)) {
-                    newBackgroundPath = "/images/blockblast_background.png"; // CHANGE TO BLOCKBLAST BACKGROUND PATH
-                } else if (button.equals(menuButton2)) {
-                    newBackgroundPath = "/images/wordle_background.png"; // CHANGE TO WORDLE BACKGROUND PATH
-                } else if (button.equals(menuButton3)) {
-                    newBackgroundPath = "/images/chess_background.png"; // CHANGE TO CHESS BACKGROUND PATH
+                // 1. Remove the border from the currently selected button (the old one)
+                if (currentlySelectedButton != null) {
+                    currentlySelectedButton.setBorderPainted(false);
+                    currentlySelectedButton.setBorder(defaultBorder);
                 }
 
-                // Set the new background image
-                background.setBackgroundImage(newBackgroundPath); // ASSUMES ImagePanel has this setter
-                background.repaint(); // Force a redraw of the background
+                // 2. Determine the new path (the paths are the same as the default background, but we keep the logic clean)
+                if (button.equals(blockBlastButton)) {
+                    newBackgroundPath = "/images/blockblast_background.png";
+                } else if (button.equals(wordleButton)) {
+                    newBackgroundPath = "/images/wordle_background.png";
+                } else if (button.equals(chessButton)) {
+                    newBackgroundPath = "/images/chess_background.jpg";
+                }
 
-                // Apply the floating border (keep old logic)
+                // 3. Set the new background image
+                backgroundScreen.setBackgroundImage(newBackgroundPath);
+                backgroundScreen.repaint();
+
+                // 4. Apply the floating border (the hover effect) to the current button
                 Border hoverBorder = BorderFactory.createRaisedBevelBorder();
                 button.setBorderPainted(true);
                 button.setBorder(hoverBorder);
-            }
 
-            @Override
-            public void mouseExited(MouseEvent e) {
-                JButton button = (JButton) e.getSource();
-
-                // Reset the background image to the default
-                background.setBackgroundImage(defaultBackgroundPath);
-                background.repaint();
-
-                // Reset the floating border (keep old logic)
-                button.setBorder(defaultBorder);
-                button.setBorderPainted(false);
+                // 5. IMPORTANT: Update the currently selected button
+                currentlySelectedButton = button;
             }
         };
 
         // Apply the hover effect adapter to all three game selection buttons
-        menuButton1.addMouseListener(hoverAdapter);
-        menuButton2.addMouseListener(hoverAdapter);
-        menuButton3.addMouseListener(hoverAdapter);
+        blockBlastButton.addMouseListener(hoverAdapter);
+        wordleButton.addMouseListener(hoverAdapter);
+        chessButton.addMouseListener(hoverAdapter);
+
+        Border initialSelectedBorder = BorderFactory.createRaisedBevelBorder();
+        currentlySelectedButton.setBorderPainted(true);
+        currentlySelectedButton.setBorder(initialSelectedBorder);
+
+        backgroundScreen.add(Box.createRigidArea(new Dimension(0, 30)));
 
         // Title ("Select Game")
-        background.add(title);
+        backgroundScreen.add(title);
 
         // Spacing between Title and Game Icons (increased spacing for visual appeal)
-        background.add(Box.createRigidArea(new Dimension(0, 50)));
+        backgroundScreen.add(Box.createRigidArea(new Dimension(0, 50)));
 
         // Main Content (Game Icons + Log Out Button)
-        background.add(contentPanel);
+        backgroundScreen.add(contentPanel);
 
     }
 
@@ -231,13 +201,13 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
      */
     public void actionPerformed(ActionEvent evt) {
         // Implement navigation logic here later. For now, print a message.
-        if (evt.getSource().equals(menuButton1)) {
+        if (evt.getSource().equals(blockBlastButton)) {
             System.out.println("Navigating to Screen One");
             // Placeholder for new controller.execute() for Screen One
-        } else if (evt.getSource().equals(menuButton2)) {
+        } else if (evt.getSource().equals(wordleButton)) {
             System.out.println("Navigating to Screen Two");
             // Placeholder for new controller.execute() for Screen Two
-        } else if (evt.getSource().equals(menuButton3)) {
+        } else if (evt.getSource().equals(chessButton)) {
             System.out.println("Navigating to Screen Three");
             // Placeholder for new controller.execute() for Screen Three
         }
