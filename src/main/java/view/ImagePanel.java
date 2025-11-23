@@ -45,4 +45,18 @@ public class ImagePanel extends JPanel {
             g.drawImage(backgroundImage, 0, 0, this.getWidth(), this.getHeight(), this);
         }
     }
+
+    public void setBackgroundImage(String newBackgroundPath) {
+        // FIX: Load the image using the ClassLoader to correctly find resources
+
+        URL imageURL = getClass().getResource(newBackgroundPath);
+
+        if (imageURL != null) {
+            this.backgroundImage = new ImageIcon(imageURL).getImage();
+        } else {
+            System.err.println("Couldn't find background image: " + newBackgroundPath);
+            this.backgroundImage = null;
+        }
+
+    }
 }
