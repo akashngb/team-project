@@ -12,6 +12,7 @@ import use_case.blockblast.PlacePieceInteractor;
 import view.blockblast.BlockBlastView;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class BlockBlastAppBuilder {
 
@@ -45,8 +46,11 @@ public class BlockBlastAppBuilder {
         JFrame frame = new JFrame("Block Blast");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setContentPane(view);
-        frame.pack();
+        frame.setMinimumSize(new Dimension(1300, 700));
         frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        frame.setResizable(false);
+        frame.pack();
 
         return frame;
     }
