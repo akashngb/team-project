@@ -61,6 +61,7 @@ public class AppBuilder {
     private CheckMoveInteractor checkMoveInteractor;
 
     public AppBuilder() {
+        FontLoader.loadFonts();
         cardPanel.setLayout(cardLayout);
     }
 
@@ -181,6 +182,9 @@ public class AppBuilder {
     public JFrame build() {
         final JFrame application = new JFrame("User Login Example");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        application.setMinimumSize(new Dimension(1300, 700));
+        application.setResizable(false);
 
         application.add(cardPanel);
 

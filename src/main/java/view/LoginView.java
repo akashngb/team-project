@@ -12,10 +12,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 
 /**
  * The View for when the user is logging into the program.
  */
+
 public class LoginView extends JPanel implements ActionListener, PropertyChangeListener {
 
     private final String viewName = "log in";
@@ -32,23 +34,38 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
     private LoginController loginController = null;
 
     public LoginView(LoginViewModel loginViewModel) {
-
         this.loginViewModel = loginViewModel;
         this.loginViewModel.addPropertyChangeListener(this);
 
         final JLabel title = new JLabel("Login Screen");
+        title.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 24f));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        final LabelTextPanel usernameInfo = new LabelTextPanel(
-                new JLabel("Username"), usernameInputField);
+        final JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+        final JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+
+        final LabelTextPanel usernameInfo = new LabelTextPanel(usernameLabel, usernameInputField);
         final LabelTextPanel passwordInfo = new LabelTextPanel(
-                new JLabel("Password"), passwordInputField);
+                passwordLabel, passwordInputField);
 
         final JPanel buttons = new JPanel();
         logIn = new JButton("log in");
+        logIn.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(logIn);
         cancel = new JButton("cancel");
+        cancel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(cancel);
+
+        ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+
+        title.setOpaque(false);
+        usernameInfo.setOpaque(false);
+        passwordInfo.setOpaque(false);
+        usernameErrorField.setOpaque(false);
+        buttons.setOpaque(false);
 
         logIn.addActionListener(
                 new ActionListener() {
@@ -116,12 +133,13 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
                 documentListenerHelper();
             }
         });
+        this.add(background);
+        background.add(title);
+        background.add(usernameInfo);
+        background.add(usernameErrorField);
+        background.add(passwordInfo);
+        background.add(buttons);
 
-        this.add(title);
-        this.add(usernameInfo);
-        this.add(usernameErrorField);
-        this.add(passwordInfo);
-        this.add(buttons);
     }
 
     /**

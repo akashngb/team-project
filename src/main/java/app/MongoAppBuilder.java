@@ -27,10 +27,7 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
+import view.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -62,6 +59,7 @@ public class MongoAppBuilder {
     private LoginView loginView;
 
     public MongoAppBuilder() {
+        FontLoader.loadFonts();
         cardPanel.setLayout(cardLayout);
     }
 

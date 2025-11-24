@@ -7,16 +7,18 @@ import interface_adapter.logged_in.LoggedInViewModel;
 import interface_adapter.logout.LogoutController;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.border.Border;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 
 /**
- * The View for when the user is logged into the program.
+ * The Menu View displayed after the user logs in.
  */
 public class LoggedInView extends JPanel implements ActionListener, PropertyChangeListener {
 
@@ -24,7 +26,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private final LoggedInViewModel loggedInViewModel;
     private final ViewManagerModel viewManagerModel;  // Add this field
     private final JLabel passwordErrorField = new JLabel();
-    private ChangePasswordController changePasswordController = null;
+    private ChangePasswordController changePasswordController = null; // Keep the field for later use in case we use later
     private LogoutController logoutController;
 
     private final JLabel username;
@@ -40,21 +42,28 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         this.viewManagerModel = viewManagerModel;  // Initialize it
         this.loggedInViewModel.addPropertyChangeListener(this);
 
-        final JLabel title = new JLabel("Logged In Screen");
+        // Font Variables for Centralized Styling
+        final Font titleFont = FontLoader.jersey10.deriveFont(Font.BOLD, 48f);
+        final Font gameTitleFont = FontLoader.jersey10.deriveFont(Font.PLAIN, 30f);
+        final Font buttonFont = FontLoader.jersey10.deriveFont(Font.BOLD, 18f);
+
+        // Apply Font to Title (Using FontLoader as in LoginView)
+        final JLabel title = new JLabel("Select Game");
+        title.setFont(titleFont);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        title.setOpaque(false);
+        // Game Panels and Buttons
 
-        final LabelTextPanel passwordInfo = new LabelTextPanel(
-                new JLabel("Password"), passwordInputField);
+        blockBlastButton = createGameButton("Block Blast", "/images/blockblast.png", gameTitleFont);
+        wordleButton = createGameButton("Wordle", "/images/wordle.png", gameTitleFont);
+        chessButton = createGameButton("Chess Puzzles", "/images/chess.png", gameTitleFont);
 
-        final JLabel usernameInfo = new JLabel("Currently logged in: ");
-        username = new JLabel();
+        currentlySelectedButton = blockBlastButton;
 
-        final JPanel buttons = new JPanel();
-        logOut = new JButton("Log Out");
-        buttons.add(logOut);
-
-        changePassword = new JButton("Change Password");
-        buttons.add(changePassword);
+        // Log Out Button (retained and styled)
+        logOutButton = new JButton("Log Out");
+        logOutButton.setFont(buttonFont);
+        logOutButton.setOpaque(false);
 
         // Add Chess Puzzle button
         chessPuzzleButton = new JButton("Play Chess Puzzles");
@@ -63,12 +72,15 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         logOut.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        if (evt.getSource().equals(logOut)) {
-                            logoutController.execute();
+                        if (evt.getSource().equals(logOutButton)) {
+                            if (logoutController != null) {
+                                logoutController.execute();
+                            }
                         }
                     }
                 }
         );
+        // Apply Hover/Float Effect
 
         // Add chess puzzle button listener
         chessPuzzleButton.addActionListener(
@@ -84,49 +96,50 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        passwordInputField.getDocument().addDocumentListener(new DocumentListener() {
+                // 2. Determine the new path (the paths are the same as the default background, but we keep the logic clean)
+                if (button.equals(blockBlastButton)) {
+                    newBackgroundPath = "/images/blockblast_background.png";
+                } else if (button.equals(wordleButton)) {
+                    newBackgroundPath = "/images/wordle_background.png";
+                } else if (button.equals(chessButton)) {
+                    newBackgroundPath = "/images/chess_background.jpg";
+                }
 
-            private void documentListenerHelper() {
-                final LoggedInState currentState = loggedInViewModel.getState();
-                currentState.setPassword(passwordInputField.getText());
-                loggedInViewModel.setState(currentState);
-            }
+                // 3. Set the new background image
+                backgroundScreen.setBackgroundImage(newBackgroundPath);
+                backgroundScreen.repaint();
 
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                documentListenerHelper();
-            }
+                // 4. Apply the floating border (the hover effect) to the current button
+                Border hoverBorder = BorderFactory.createRaisedBevelBorder();
+                button.setBorderPainted(true);
+                button.setBorder(hoverBorder);
 
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                documentListenerHelper();
+                // 5. IMPORTANT: Update the currently selected button
+                currentlySelectedButton = button;
             }
+        };
 
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                documentListenerHelper();
-            }
-        });
+        // Apply the hover effect adapter to all three game selection buttons
+        blockBlastButton.addMouseListener(hoverAdapter);
+        wordleButton.addMouseListener(hoverAdapter);
+        chessButton.addMouseListener(hoverAdapter);
 
         changePassword.addActionListener(
                 evt -> {
                     if (evt.getSource().equals(changePassword)) {
                         final LoggedInState currentState = loggedInViewModel.getState();
 
-                        this.changePasswordController.execute(
-                                currentState.getUsername(),
-                                currentState.getPassword());
-                    }
-                }
-        );
+        backgroundScreen.add(Box.createRigidArea(new Dimension(0, 30)));
 
-        this.add(title);
-        this.add(usernameInfo);
-        this.add(username);
+        // Title ("Select Game")
+        backgroundScreen.add(title);
 
-        this.add(passwordInfo);
-        this.add(passwordErrorField);
-        this.add(buttons);
+        // Spacing between Title and Game Icons (increased spacing for visual appeal)
+        backgroundScreen.add(Box.createRigidArea(new Dimension(0, 50)));
+
+        // Main Content (Game Icons + Log Out Button)
+        backgroundScreen.add(contentPanel);
+
     }
 
     /**
@@ -134,26 +147,35 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
      * @param evt the ActionEvent to react to
      */
     public void actionPerformed(ActionEvent evt) {
-        System.out.println("Click " + evt.getActionCommand());
+        // Implement navigation logic here later. For now, print a message.
+        if (evt.getSource().equals(blockBlastButton)) {
+            System.out.println("Navigating to Screen One");
+            // Placeholder for new controller.execute() for Screen One
+        } else if (evt.getSource().equals(wordleButton)) {
+            System.out.println("Navigating to Screen Two");
+            // Placeholder for new controller.execute() for Screen Two
+        } else if (evt.getSource().equals(chessButton)) {
+            System.out.println("Navigating to Screen Three");
+            // Placeholder for new controller.execute() for Screen Three
+        }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("state")) {
             final LoggedInState state = (LoggedInState) evt.getNewValue();
-            username.setText(state.getUsername());
         }
         else if (evt.getPropertyName().equals("password")) {
+            // Keep password related UI update logic, even if the password field is gone
             final LoggedInState state = (LoggedInState) evt.getNewValue();
             if (state.getPasswordError() == null) {
                 JOptionPane.showMessageDialog(this, "password updated for " + state.getUsername());
-                passwordInputField.setText("");
+                // Removed passwordInputField.setText("")
             }
             else {
                 JOptionPane.showMessageDialog(this, state.getPasswordError());
             }
         }
-
     }
 
     public String getViewName() {

@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 
 /**
  * The View for the Signup Use Case.
@@ -34,22 +35,43 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         signupViewModel.addPropertyChangeListener(this);
 
         final JLabel title = new JLabel(SignupViewModel.TITLE_LABEL);
+        title.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 24f));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        final JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+        final JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+        final JLabel repeatPasswordLabel = new JLabel("Repeat Password:");
+        repeatPasswordLabel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+
         final LabelTextPanel usernameInfo = new LabelTextPanel(
-                new JLabel(SignupViewModel.USERNAME_LABEL), usernameInputField);
+                usernameLabel, usernameInputField);
         final LabelTextPanel passwordInfo = new LabelTextPanel(
-                new JLabel(SignupViewModel.PASSWORD_LABEL), passwordInputField);
+                passwordLabel, passwordInputField);
         final LabelTextPanel repeatPasswordInfo = new LabelTextPanel(
-                new JLabel(SignupViewModel.REPEAT_PASSWORD_LABEL), repeatPasswordInputField);
+                repeatPasswordLabel, repeatPasswordInputField);
 
         final JPanel buttons = new JPanel();
         toLogin = new JButton(SignupViewModel.TO_LOGIN_BUTTON_LABEL);
+        toLogin.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(toLogin);
         signUp = new JButton(SignupViewModel.SIGNUP_BUTTON_LABEL);
+        signUp.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(signUp);
         cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
+        cancel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(cancel);
+
+
+        ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
+        background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
+
+        title.setOpaque(false);
+        usernameInfo.setOpaque(false);
+        passwordInfo.setOpaque(false);
+        repeatPasswordInfo.setOpaque(false);
+        buttons.setOpaque(false);
 
         signUp.addActionListener(
                 // This creates an anonymous subclass of ActionListener and instantiates it.
@@ -84,11 +106,12 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        this.add(title);
-        this.add(usernameInfo);
-        this.add(passwordInfo);
-        this.add(repeatPasswordInfo);
-        this.add(buttons);
+        this.add(background);
+        background.add(title);
+        background.add(usernameInfo);
+        background.add(passwordInfo);
+        background.add(repeatPasswordInfo);
+        background.add(buttons);
     }
 
     private void addUsernameListener() {
