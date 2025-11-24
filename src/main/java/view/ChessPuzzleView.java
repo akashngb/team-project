@@ -224,6 +224,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
     }
 
     private void handleMove(PuzzleMove move, Point from, Point to) {
+        String newFen = "";
         if (checkMoveController == null) {
             boardPanel.onMoveValidated(false);
             return;
@@ -238,7 +239,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
             return;
         }
 
-        // Check if this is the correct move
+        // Check if already solved
         if (currentMoveIndex >= puzzle.getSolutionMoves().size()) {
             boardPanel.onMoveValidated(false);
             feedbackLabel.setText("Puzzle already solved!");
@@ -254,7 +255,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         System.out.println("Is correct: " + isCorrect);
 
         // Validate the move on the board
-        boardPanel.onMoveValidated(isCorrect);
+        newFen = boardPanel.onMoveValidated(isCorrect);
 
         if (isCorrect) {
             // Add to move history
@@ -264,6 +265,10 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
             // Update the controller
             checkMoveController.execute(moveStr, currentMoveIndex);
             currentMoveIndex++;
+
+            puzzle.setNewFen(newFen);
+
+            boardPanel.loadPosition(newFen);
 
             // Update evaluation
             updateEvaluation(moveStr);
@@ -426,7 +431,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
     }
 
     private void loadPuzzleToBoard(ChessPuzzle puzzle) {
-        boardPanel.loadPosition(puzzle.getFen());
+        boardPanel.loadPosition(puzzle.getNewFen());
         ratingLabel.setText("Rating: " + puzzle.getRating());
         themesLabel.setText("Themes: " + String.join(", ", puzzle.getThemes()));
     }

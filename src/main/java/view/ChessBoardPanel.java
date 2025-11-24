@@ -3,12 +3,11 @@ package view;
 import entity.PuzzleMove;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class ChessBoardPanel extends JPanel {
     private static final int BOARD_SIZE = 8;
@@ -20,6 +19,7 @@ public class ChessBoardPanel extends JPanel {
     private static final Color LAST_MOVE_COLOR = new Color(155, 199, 0, 100);
 
     private String[][] board = new String[8][8];
+    private String[][] updatedBoard = new String[8][8];
     private Point dragStart = null;
     private String draggedPiece = null;
     private Point selectedSquare = null;
@@ -47,6 +47,7 @@ public class ChessBoardPanel extends JPanel {
     private String capturedPiece = null;
 
     private static final Map<String, String> PIECE_SYMBOLS = new HashMap<>();
+
     static {
         PIECE_SYMBOLS.put("K", "♔");
         PIECE_SYMBOLS.put("Q", "♕");
@@ -217,11 +218,15 @@ public class ChessBoardPanel extends JPanel {
                 moveListener.onMoveMade(move, pendingFrom, pendingTo);
             }
         });
+
+        repaint();
     }
 
-    public void onMoveValidated(boolean isCorrect) {
+    public String onMoveValidated(boolean isCorrect) {
+        String newFen = "";
+
         if (pendingFrom == null || pendingTo == null) {
-            return;
+            return newFen;
         }
 
         if (isCorrect) {
@@ -229,13 +234,18 @@ public class ChessBoardPanel extends JPanel {
             lastMoveFrom = new Point(pendingFrom.x, pendingFrom.y);
             lastMoveTo = new Point(pendingTo.x, pendingTo.y);
 
+            // Update board
+            board[pendingFrom.y][pendingFrom.x] = "";
+            board[pendingTo.y][pendingTo.x] = pendingPiece;
+
+            newFen = generateFen();
+
             // Clear pending
             pendingFrom = null;
             pendingTo = null;
             pendingPiece = null;
             capturedPiece = null;
             clearSelection();
-            repaint();
         } else {
             // Move was incorrect, animate it back
             Point from = new Point(pendingFrom.x, pendingFrom.y);
@@ -256,7 +266,48 @@ public class ChessBoardPanel extends JPanel {
                 repaint();
             });
         }
+        return newFen;
     }
+
+    public String generateFen() {
+        StringBuilder fenBuilder = new StringBuilder();
+
+        for (int row = 0; row < 8; row++) {
+            int emptyCount = 0;
+
+            for (int col = 0; col < 8; col++) {
+                String cell = board[row][col];
+
+                boolean isEmpty = (cell == null || cell.equals("") || cell.equals("."));
+
+                if (isEmpty) {
+                    emptyCount++;
+                } else {
+                    // If there were empty squares before this piece, write them first
+                    if (emptyCount > 0) {
+                        fenBuilder.append(emptyCount);
+                        emptyCount = 0;
+                    }
+
+                    // Append piece character (assumed correct format already)
+                    fenBuilder.append(cell);
+                }
+            }
+
+            // Append leftover empty squares at end of row
+            if (emptyCount > 0) {
+                fenBuilder.append(emptyCount);
+            }
+
+            // Add row separator except last row
+            if (row < 7) {
+                fenBuilder.append('/');
+            }
+        }
+
+        return fenBuilder.toString();
+    }
+
 
     private void animateMove(Point from, Point to, String piece, Runnable onComplete) {
         isAnimating = true;
@@ -355,7 +406,7 @@ public class ChessBoardPanel extends JPanel {
         // Animate with faster speed
         animateMove(from, to, piece, () -> {
             Timer delayTimer = new Timer(150, e -> {
-                ((Timer)e.getSource()).stop();
+                ((Timer) e.getSource()).stop();
                 animateSolutionMove(index + 1, moves, onComplete);
             });
             delayTimer.setRepeats(false);
@@ -417,7 +468,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void addKnightMoves(int col, int row) {
-        int[][] knightMoves = {{-2,-1}, {-2,1}, {-1,-2}, {-1,2}, {1,-2}, {1,2}, {2,-1}, {2,1}};
+        int[][] knightMoves = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
         for (int[] move : knightMoves) {
             int newCol = col + move[0];
             int newRow = row + move[1];
@@ -428,11 +479,11 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void addBishopMoves(int col, int row) {
-        addSlidingMoves(col, row, new int[][]{{1,1}, {1,-1}, {-1,1}, {-1,-1}});
+        addSlidingMoves(col, row, new int[][]{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}});
     }
 
     private void addRookMoves(int col, int row) {
-        addSlidingMoves(col, row, new int[][]{{0,1}, {0,-1}, {1,0}, {-1,0}});
+        addSlidingMoves(col, row, new int[][]{{0, 1}, {0, -1}, {1, 0}, {-1, 0}});
     }
 
     private void addQueenMoves(int col, int row) {
@@ -441,7 +492,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void addKingMoves(int col, int row) {
-        int[][] kingMoves = {{0,1}, {0,-1}, {1,0}, {-1,0}, {1,1}, {1,-1}, {-1,1}, {-1,-1}};
+        int[][] kingMoves = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
         for (int[] move : kingMoves) {
             int newCol = col + move[0];
             int newRow = row + move[1];
@@ -556,6 +607,9 @@ public class ChessBoardPanel extends JPanel {
         // Draw coordinate labels
         drawCoordinates(g2d);
     }
+
+
+
 
     private void drawPiece(Graphics2D g2d, String piece, int x, int y) {
         String symbol = PIECE_SYMBOLS.get(piece);
