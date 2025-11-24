@@ -1,6 +1,7 @@
 package app;
 
 import data_access.FileUserDataAccessObject;
+import entity.ChessPuzzle;
 import entity.UserFactory;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.logged_in.ChangePasswordController;
@@ -26,8 +27,14 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
-import view.*;
-import view.FontLoader;
+import view.LoggedInView;
+import view.LoginView;
+import view.SignupView;
+import view.ViewManager;
+import data_access.RapidAPIChessPuzzleDataAccess;
+import interface_adapter.chess_puzzle.*;
+import use_case.chess_puzzle.*;
+import view.ChessPuzzleView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,6 +56,9 @@ public class AppBuilder {
     private LoggedInViewModel loggedInViewModel;
     private LoggedInView loggedInView;
     private LoginView loginView;
+    private ChessPuzzleView chessPuzzleView;
+    private ChessPuzzleViewModel chessPuzzleViewModel;
+    private CheckMoveInteractor checkMoveInteractor;
 
     public AppBuilder() {
         FontLoader.loadFonts();
@@ -71,7 +81,7 @@ public class AppBuilder {
 
     public AppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
-        loggedInView = new LoggedInView(loggedInViewModel);
+        loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
@@ -123,6 +133,49 @@ public class AppBuilder {
 
         final LogoutController logoutController = new LogoutController(logoutInteractor);
         loggedInView.setLogoutController(logoutController);
+        return this;
+    }
+
+    public AppBuilder addChessPuzzleView() {
+        chessPuzzleViewModel = new ChessPuzzleViewModel();
+        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);  // Pass viewManagerModel
+        cardPanel.add(chessPuzzleView, chessPuzzleView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addChessPuzzleUseCase() {
+        // Setup data access
+        final ChessPuzzleDataAccessInterface dataAccess =
+                new RapidAPIChessPuzzleDataAccess();
+
+        // Setup Load Puzzles use case
+        final LoadPuzzlesOutputBoundary loadPresenter =
+                new LoadPuzzlesPresenter(chessPuzzleViewModel);
+        final LoadPuzzlesInputBoundary loadInteractor =
+                new LoadPuzzlesInteractor(dataAccess, loadPresenter);
+        final LoadPuzzlesController loadController =
+                new LoadPuzzlesController(loadInteractor);
+
+        // Setup Check Move use case
+        final CheckMoveOutputBoundary checkPresenter =
+                new CheckMovePresenter(chessPuzzleViewModel);
+        checkMoveInteractor = new CheckMoveInteractor(checkPresenter);
+        final CheckMoveController checkController =
+                new CheckMoveController(checkMoveInteractor);
+
+        // Connect controllers to view
+        chessPuzzleView.setLoadPuzzlesController(loadController);
+        chessPuzzleView.setCheckMoveController(checkController);
+
+        // Add property change listener to set current puzzle
+        chessPuzzleViewModel.addPropertyChangeListener(evt -> {
+            ChessPuzzleState state = chessPuzzleViewModel.getState();
+            ChessPuzzle currentPuzzle = state.getCurrentPuzzle();
+            if (currentPuzzle != null) {
+                checkMoveInteractor.setCurrentPuzzle(currentPuzzle);
+            }
+        });
+
         return this;
     }
 
