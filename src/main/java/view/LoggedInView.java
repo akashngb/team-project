@@ -6,6 +6,7 @@ import interface_adapter.logged_in.ChangePasswordController; // Keep import for 
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
 import interface_adapter.logout.LogoutController;
+import app.blockblast.BlockBlastAppBuilder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -207,7 +208,8 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     public void actionPerformed(ActionEvent evt) {
         // Implement navigation logic here later. For now, print a message.
         if (evt.getSource().equals(blockBlastButton)) {
-            System.out.println("Navigating to Screen One");
+            JFrame frame = BlockBlastAppBuilder.buildFrame();
+            frame.setVisible(true);
             // Placeholder for new controller.execute() for Screen One
         } else if (evt.getSource().equals(wordleButton)) {
             viewManagerModel.setState("WORDLE");
