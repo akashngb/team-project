@@ -63,7 +63,6 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
             }
         });
 
-        // 预览区域的点击
         previewPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -83,8 +82,8 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
 
         for (int r = 0; r < BOARD_ROWS; r++) {
             for (int c = 0; c < BOARD_COLS; c++) {
-                int x = c * CELL_SIZE;                 // ⭐ 列 → x
-                int y = OFFSET_Y + r * CELL_SIZE;      // ⭐ 行 → y + 偏移
+                int x = c * CELL_SIZE;
+                int y = OFFSET_Y + r * CELL_SIZE;
 
                 g.setColor(Color.LIGHT_GRAY);
                 g.drawRect(x, y, CELL_SIZE, CELL_SIZE);
@@ -105,7 +104,6 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
         previewPanel.repaint();
     }
 
-    /** 点击棋盘 */
     private void handleBoardClick(MouseEvent e) {
         if (!SwingUtilities.isLeftMouseButton(e)) {
             return;

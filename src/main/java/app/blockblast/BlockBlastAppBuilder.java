@@ -16,7 +16,7 @@ import javax.swing.*;
 public class BlockBlastAppBuilder {
 
     public static JFrame buildFrame() {
-        Board board = new Board(10, 10);
+        Board board = new Board(8, 8);
         PieceGenerator generator = new PieceGenerator();
 
         Piece[] pieces = new Piece[3];

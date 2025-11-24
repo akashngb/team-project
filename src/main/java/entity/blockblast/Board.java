@@ -49,8 +49,7 @@ public class Board {
 
     public int clearFullLines(){
 
-        boolean[] fullRow = new boolean[rows];
-        boolean[] fullCol = new boolean[cols];
+        int cleared = 0;
 
         for (int r = 0; r < rows; r++) {
             boolean full = true;
@@ -60,7 +59,13 @@ public class Board {
                     break;
                 }
             }
-            fullRow[r] = full;
+            System.out.println("row " + r + " full? " + full);
+            if (full) {
+                for (int c = 0; c < cols; c++) {
+                    grid[r][c] = false;
+                }
+                cleared++;
+            }
         }
 
         for (int c = 0; c < cols; c++) {
@@ -71,28 +76,15 @@ public class Board {
                     break;
                 }
             }
-            fullCol[c] = full;
-        }
-
-        int cleared = 0;
-
-        for (int r = 0; r < rows; r++) {
-            if (fullRow[r]) {
-                cleared++;
-                for (int c = 0; c < cols; c++) {
-                    grid[r][c] = false;
-                }
-            }
-        }
-
-        for (int c = 0; c < cols; c++) {
-            if (fullCol[c]) {
-                cleared++;
+            System.out.println("col " + c + " full? " + full);
+            if (full) {
                 for (int r = 0; r < rows; r++) {
                     grid[r][c] = false;
                 }
+                cleared++;
             }
         }
+
         return cleared;
     }
 }
