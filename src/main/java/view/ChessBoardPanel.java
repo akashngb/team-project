@@ -1,6 +1,7 @@
 package view;
 
 import entity.PuzzleMove;
+import org.intellij.lang.annotations.Flow;
 
 import javax.swing.*;
 import javax.swing.Timer;

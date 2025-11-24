@@ -182,6 +182,9 @@ public class AppBuilder {
         final JFrame application = new JFrame("User Login Example");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        application.setMinimumSize(new Dimension(1300, 700));
+        application.setResizable(false);
+
         application.add(cardPanel);
 
         viewManagerModel.setState(signupView.getViewName());

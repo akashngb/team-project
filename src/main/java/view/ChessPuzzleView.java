@@ -54,6 +54,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         // Create board panel
         boardPanel = new ChessBoardPanel();
         boardPanel.setMoveListener((move, from, to) -> handleMove(move));
+        boardPanel.setBackground(new Color(50, 50, 50));
 
         // Create info panel (top)
         JPanel infoPanel = createInfoPanel();
