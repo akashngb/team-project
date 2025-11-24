@@ -75,6 +75,7 @@ public class MongoAppBuilder {
 
 
     public MongoAppBuilder() {
+        FontLoader.loadFonts();
         cardPanel.setLayout(cardLayout);
     }
 
