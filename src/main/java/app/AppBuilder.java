@@ -27,14 +27,10 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
+import view.*;
 import data_access.RapidAPIChessPuzzleDataAccess;
 import interface_adapter.chess_puzzle.*;
 import use_case.chess_puzzle.*;
-import view.ChessPuzzleView;
 
 import javax.swing.*;
 import java.awt.*;

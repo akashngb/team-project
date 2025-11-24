@@ -50,6 +50,10 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         // Create main content panel
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setOpaque(false);
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setOpaque(false);
+        wrapper.add(mainPanel, new GridBagConstraints());
+        add(wrapper, BorderLayout.CENTER);
 
         // Create board panel
         boardPanel = new ChessBoardPanel();
@@ -79,7 +83,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("Chess Puzzle Trainer");
+        JLabel titleLabel = new JLabel("Chess Puzzle");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);

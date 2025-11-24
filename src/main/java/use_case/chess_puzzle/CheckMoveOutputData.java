@@ -4,10 +4,10 @@ package use_case.chess_puzzle;
  * Output data for move checking.
  */
 public class CheckMoveOutputData {
-    private final String feedback;
-    private final boolean isCorrect;
-    private final boolean puzzleSolved;
-    private final String computerMove;  // Add this field
+    private final String feedback; // For analysis
+    private final boolean isCorrect; // Check correctness
+    private final boolean puzzleSolved; // Check wheter the puzzle is solved
+    private final String computerMove;  // Added this field for opponent move
 
     public CheckMoveOutputData(String feedback, boolean isCorrect, boolean puzzleSolved, String computerMove) {
         this.feedback = feedback;

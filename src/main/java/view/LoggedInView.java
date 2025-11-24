@@ -2,6 +2,7 @@ package view;
 
 import interface_adapter.ViewManagerModel;
 import interface_adapter.logged_in.ChangePasswordController;
+import interface_adapter.logged_in.ChangePasswordController; // Keep import for setter
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
 import interface_adapter.logout.LogoutController;
@@ -24,22 +25,54 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
     private final String viewName = "logged in";
     private final LoggedInViewModel loggedInViewModel;
-    private final ViewManagerModel viewManagerModel;  // Add this field
     private final JLabel passwordErrorField = new JLabel();
     private ChangePasswordController changePasswordController = null; // Keep the field for later use in case we use later
     private LogoutController logoutController;
 
-    private final JLabel username;
+    // New buttons for the menu options
+    private final JButton blockBlastButton;
+    private final JButton wordleButton;
+    private final JButton chessButton;
+    private final JButton logOutButton; // Keep the Log Out button
+    private final ImagePanel backgroundScreen;
+    private JButton currentlySelectedButton;
 
-    private final JButton logOut;
-    private final JButton chessPuzzleButton;  // Add this field
+    private JButton createGameButton(String gameName, String imagePath, Font gameTitleFont) {
+        // Load the image resource
+        URL imageUrl = getClass().getResource(imagePath);
+        ImageIcon icon = new ImageIcon(imageUrl);
+        icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
 
-    private final JTextField passwordInputField = new JTextField(15);
-    private final JButton changePassword;
+        // Create the title label
+        JLabel image = new JLabel(icon);
+        JLabel title = new JLabel(gameName, SwingConstants.CENTER);
+        title.setFont(gameTitleFont);
+
+        // Create the content panel (Image + Title)
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.add(image, BorderLayout.CENTER);
+        contentPanel.add(title, BorderLayout.SOUTH);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        contentPanel.setOpaque(false);
+
+        // Create the transparent button wrapper
+        JButton button = new JButton();
+        button.setLayout(new BorderLayout());
+        button.add(contentPanel, BorderLayout.CENTER);
+        button.setOpaque(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        return button;
+    }
+
+    private final ViewManagerModel viewManagerModel;
 
     public LoggedInView(LoggedInViewModel loggedInViewModel, ViewManagerModel viewManagerModel) {
         this.loggedInViewModel = loggedInViewModel;
-        this.viewManagerModel = viewManagerModel;  // Initialize it
+        this.viewManagerModel = viewManagerModel;
         this.loggedInViewModel.addPropertyChangeListener(this);
 
         // Font Variables for Centralized Styling
@@ -65,11 +98,36 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         logOutButton.setFont(buttonFont);
         logOutButton.setOpaque(false);
 
-        // Add Chess Puzzle button
-        chessPuzzleButton = new JButton("Play Chess Puzzles");
-        buttons.add(chessPuzzleButton);
+        backgroundScreen = new ImagePanel("/images/blockblast_background.png");
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        backgroundScreen.setLayout(new BoxLayout(backgroundScreen, BoxLayout.Y_AXIS));
 
-        logOut.addActionListener(
+        this.add(backgroundScreen);
+
+        // Horizontal Layout for Game Selection Panels
+        final JPanel gameSelectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // Center with more horizontal gap
+        gameSelectionPanel.add(blockBlastButton); // Now these are the clickable game panels
+        gameSelectionPanel.add(wordleButton);
+        gameSelectionPanel.add(chessButton);
+        gameSelectionPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        gameSelectionPanel.setOpaque(false);
+        // Main Content Panel (Vertical Stacking)
+        final JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setOpaque(false);
+
+        contentPanel.add(gameSelectionPanel);
+        contentPanel.add(Box.createRigidArea(new Dimension(0, 40))); // More space before Log Out
+        contentPanel.add(logOutButton);
+        logOutButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Ensure log out button is centered
+
+        // Add Action Listeners
+        blockBlastButton.addActionListener(this);
+        wordleButton.addActionListener(this);
+        chessButton.addActionListener(this);
+
+        // Action Listener for Log Out
+        logOutButton.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
                         if (evt.getSource().equals(logOutButton)) {
@@ -82,19 +140,20 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         );
         // Apply Hover/Float Effect
 
-        // Add chess puzzle button listener
-        chessPuzzleButton.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        if (evt.getSource().equals(chessPuzzleButton)) {
-                            viewManagerModel.setState("chess puzzle");
-                            viewManagerModel.firePropertyChange();
-                        }
-                    }
-                }
-        );
+        // Define the default border only (no need for a static hoverBorder)
+        final Border defaultBorder = BorderFactory.createEmptyBorder();
+        final String defaultBackgroundPath = "/images/blockblast_background.png";
+        MouseAdapter hoverAdapter = new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                JButton button = (JButton) e.getSource();
+                String newBackgroundPath = defaultBackgroundPath;
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+                // 1. Remove the border from the currently selected button (the old one)
+                if (currentlySelectedButton != null) {
+                    currentlySelectedButton.setBorderPainted(false);
+                    currentlySelectedButton.setBorder(defaultBorder);
+                }
 
                 // 2. Determine the new path (the paths are the same as the default background, but we keep the logic clean)
                 if (button.equals(blockBlastButton)) {
@@ -124,10 +183,9 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         wordleButton.addMouseListener(hoverAdapter);
         chessButton.addMouseListener(hoverAdapter);
 
-        changePassword.addActionListener(
-                evt -> {
-                    if (evt.getSource().equals(changePassword)) {
-                        final LoggedInState currentState = loggedInViewModel.getState();
+        Border initialSelectedBorder = BorderFactory.createRaisedBevelBorder();
+        currentlySelectedButton.setBorderPainted(true);
+        currentlySelectedButton.setBorder(initialSelectedBorder);
 
         backgroundScreen.add(Box.createRigidArea(new Dimension(0, 30)));
 
@@ -155,7 +213,10 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             System.out.println("Navigating to Screen Two");
             // Placeholder for new controller.execute() for Screen Two
         } else if (evt.getSource().equals(chessButton)) {
+            viewManagerModel.setState("chess puzzle");
+            viewManagerModel.firePropertyChange();
             System.out.println("Navigating to Screen Three");
+
             // Placeholder for new controller.execute() for Screen Three
         }
     }
