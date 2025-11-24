@@ -28,6 +28,10 @@ public class Board {
         for (Position cell : piece.getCells()) {
             int r = baseRow + cell.row;
             int c = baseCol + cell.col;
+            if (r < 0 || r >= rows || c < 0 || c >= cols) {
+                return false;
+            }
+
             if (grid[r][c]){
                     return false;
             }
