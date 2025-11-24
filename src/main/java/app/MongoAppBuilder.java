@@ -28,6 +28,15 @@ import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
 import view.*;
+// Wordle imports
+import data_access.wordle.FileWordListDataAccess;
+import data_access.wordle.InMemoryGameSessionGateway;
+import interface_adapter.wordle.WordleController;
+import interface_adapter.wordle.WordlePresenter;
+import interface_adapter.wordle.WordleViewModel;
+import use_case.wordle.StartGameInteractor;
+import use_case.wordle.SubmitGuessInteractor;
+import wordle.WordleView;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,6 +49,7 @@ public class MongoAppBuilder {
     private final JPanel cardPanel = new JPanel();
     private final CardLayout cardLayout = new CardLayout();
     final UserFactory userFactory = new UserFactory();
+
     final ViewManagerModel viewManagerModel = new ViewManagerModel();
     ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
@@ -57,6 +67,12 @@ public class MongoAppBuilder {
     private LoggedInViewModel loggedInViewModel;
     private LoggedInView loggedInView;
     private LoginView loginView;
+
+    // Wordle fields
+    private WordleView wordleView;
+    private WordleViewModel wordleViewModel;
+    private WordleController wordleController;
+
 
     public MongoAppBuilder() {
         FontLoader.loadFonts();
@@ -79,7 +95,7 @@ public class MongoAppBuilder {
 
     public MongoAppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
-        loggedInView = new LoggedInView(loggedInViewModel);
+        loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
@@ -132,9 +148,41 @@ public class MongoAppBuilder {
         return this;
     }
 
+    public MongoAppBuilder addWordleFeature() {
+        // Data access
+        FileWordListDataAccess wordListDao = new FileWordListDataAccess();
+        InMemoryGameSessionGateway sessionGateway = new InMemoryGameSessionGateway();
+
+        // ViewModel
+        wordleViewModel = new WordleViewModel(java.util.Collections.emptyList(), 6, false, false, null, "");
+
+        // Presenter
+        WordlePresenter wordlePresenter = new WordlePresenter(vm -> {
+            // Update the view
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
+
+        // Interactors
+        StartGameInteractor startGameInteractor = new StartGameInteractor(wordListDao, sessionGateway, wordlePresenter);
+        SubmitGuessInteractor submitGuessInteractor = new SubmitGuessInteractor(wordListDao, sessionGateway, wordlePresenter);
+
+        // Controller
+        wordleController = new WordleController(startGameInteractor, submitGuessInteractor);
+
+        // View
+        wordleView = new WordleView(wordleController, vm -> {}); // presenter updates via lambda above
+        cardPanel.add(wordleView, "WORDLE");
+
+        return this;
+    }
+
     public JFrame build() {
         final JFrame application = new JFrame("User Login - MongoDB");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        // Make the window non-resizable
+        application.setMinimumSize(new Dimension(1300, 700));
+        application.setResizable(false);
 
         // Add shutdown hook to properly close MongoDB connection
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

@@ -1,5 +1,7 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
+import interface_adapter.logged_in.ChangePasswordController;
 import interface_adapter.logged_in.ChangePasswordController; // Keep import for setter
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
@@ -66,8 +68,11 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         return button;
     }
 
-    public LoggedInView(LoggedInViewModel loggedInViewModel) {
+    private final ViewManagerModel viewManagerModel;
+
+    public LoggedInView(LoggedInViewModel loggedInViewModel, ViewManagerModel viewManagerModel) {
         this.loggedInViewModel = loggedInViewModel;
+        this.viewManagerModel = viewManagerModel;
         this.loggedInViewModel.addPropertyChangeListener(this);
 
         // Font Variables for Centralized Styling
