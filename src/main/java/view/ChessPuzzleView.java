@@ -38,6 +38,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
     private List<String> moveHistory = new ArrayList<>();
 
     public ChessPuzzleView(ChessPuzzleViewModel viewModel, ViewManagerModel viewManagerModel) {
+        // Sets all of the starting information to create the puzzle view
         this.viewModel = viewModel;
         this.viewManagerModel = viewManagerModel;
         this.viewModel.addPropertyChangeListener(this);
@@ -52,7 +53,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
         // Create board panel
         boardPanel = new ChessBoardPanel();
-        boardPanel.setMoveListener((move, from, to) -> handleMove(move, from, to));
+        boardPanel.setMoveListener((move, from, to) -> handleMove(move));
 
         // Create info panel (top)
         JPanel infoPanel = createInfoPanel();
@@ -223,7 +224,8 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         });
     }
 
-    private void handleMove(PuzzleMove move, Point from, Point to) {
+    private void handleMove(PuzzleMove move) {
+        // When a move is made, this is how the information is passed between the BoardPanel and PuzzleView
         String newFen = "";
         if (checkMoveController == null) {
             boardPanel.onMoveValidated(false);
@@ -234,6 +236,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         ChessPuzzleState state = viewModel.getState();
         ChessPuzzle puzzle = state.getCurrentPuzzle();
 
+        // Checking if a puzzle is present
         if (puzzle == null) {
             boardPanel.onMoveValidated(false);
             return;
@@ -247,6 +250,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
             return;
         }
 
+        // Checking is the move made was correct or not
         String correctMove = puzzle.getSolutionMoves().get(currentMoveIndex);
         boolean isCorrect = moveStr.equals(correctMove);
 
@@ -266,8 +270,10 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
             checkMoveController.execute(moveStr, currentMoveIndex);
             currentMoveIndex++;
 
+            // Storing the board state in the puzzle
             puzzle.setNewFen(newFen);
 
+            // Updating the visual of the board
             boardPanel.loadPosition(newFen);
 
             // Update evaluation
@@ -299,6 +305,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
     }
 
     private void updateMoveHistory() {
+        // Keeping track of the moves that have been made so far
         StringBuilder history = new StringBuilder();
         for (int i = 0; i < moveHistory.size(); i++) {
             int moveNum = (i / 2) + 1;
