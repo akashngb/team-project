@@ -19,7 +19,6 @@ public class ChessBoardPanel extends JPanel {
     private static final Color LAST_MOVE_COLOR = new Color(155, 199, 0, 100);
 
     private String[][] board = new String[8][8];
-    private String[][] updatedBoard = new String[8][8];
     private Point dragStart = null;
     private String draggedPiece = null;
     private Point selectedSquare = null;
@@ -74,7 +73,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void initializeBoard() {
-        // Restarting the board from scratch, restarting
+        // Restarting the board from scratch
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 board[i][j] = "";
@@ -87,7 +86,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     public void loadPosition(String fen) {
-        // Changing the board to whatever the fen that is passed in
+        // Changing the board to the FEN that is passed in
         initializeBoard();
         possibleMoves.clear();
         selectedSquare = null;
@@ -99,15 +98,15 @@ public class ChessBoardPanel extends JPanel {
         String[] parts = fen.split(" ");
         String position = parts[0];
 
-        String[] ranks = position.split("/");
-        for (int rank = 0; rank < ranks.length && rank < 8; rank++) {
-            int file = 0;
-            for (char c : ranks[rank].toCharArray()) {
+        String[] rows = position.split("/");
+        for (int row = 0; row < rows.length && row < 8; row++) {
+            int col = 0;
+            for (char c : rows[row].toCharArray()) {
                 if (Character.isDigit(c)) {
-                    file += Character.getNumericValue(c);
+                    col += Character.getNumericValue(c);
                 } else {
-                    board[rank][file] = String.valueOf(c);
-                    file++;
+                    board[row][col] = String.valueOf(c);
+                    col++;
                 }
             }
         }
@@ -275,6 +274,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     public String generateFen() {
+        // Creating the current board state in fen to be stored in the ChessPuzzle entity
         StringBuilder fenBuilder = new StringBuilder();
 
         for (int row = 0; row < 8; row++) {
@@ -315,6 +315,7 @@ public class ChessBoardPanel extends JPanel {
 
 
     private void animateMove(Point from, Point to, String piece, Runnable onComplete) {
+        // Making the moves animate from one location to another
         isAnimating = true;
         animatingPiece = piece;
         animationStart = new Point(from.x * SQUARE_SIZE, from.y * SQUARE_SIZE);
