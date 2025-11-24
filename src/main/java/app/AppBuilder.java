@@ -26,10 +26,8 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
-import view.LoggedInView;
-import view.LoginView;
-import view.SignupView;
-import view.ViewManager;
+import view.*;
+import view.FontLoader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,6 +51,7 @@ public class AppBuilder {
     private LoginView loginView;
 
     public AppBuilder() {
+        FontLoader.loadFonts();
         cardPanel.setLayout(cardLayout);
     }
 
@@ -130,6 +129,9 @@ public class AppBuilder {
     public JFrame build() {
         final JFrame application = new JFrame("User Login Example");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+
+        application.setMinimumSize(new Dimension(1300, 700));
+        application.setResizable(false);
 
         application.add(cardPanel);
 
