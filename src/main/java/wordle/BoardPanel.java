@@ -16,6 +16,7 @@ public class BoardPanel extends JPanel {
 
     public BoardPanel() {
         setMaximumSize(getPreferredSize());
+        setBackground(new Color(45, 45, 45));  // dark grey
     }
 
     @Override

@@ -11,14 +11,18 @@ import java.awt.event.ActionListener;
 public class KeyboardPanel extends JPanel {
     public KeyboardPanel(ActionListener keyListener) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBackground(new Color(45, 45, 45));
+
 
 
         String[] rows = new String[]{"qwertyuiop", "asdfghjkl", "zxcvbnm"};
         for (int i = 0; i < rows.length; i++) {
             String row = rows[i];
             JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 4));
+            rowPanel.setBackground(new Color(45, 45, 45));
             for (char c : row.toCharArray()) {
                 JButton b = makeKeyButton(String.valueOf(c).toUpperCase(), keyListener);
+                b.setBackground(new Color(70, 70, 70));
                 rowPanel.add(b);
             }
             // add backspace at the end of the last row
@@ -29,29 +33,6 @@ public class KeyboardPanel extends JPanel {
             }
             add(rowPanel);
         }
-
-
-        /*String[] rows = new String[]{"qwertyuiop", "asdfghjkl", "zxcvbnm"};
-        for (String row : rows) {
-            JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 4));
-            for (char c : row.toCharArray()) {
-                JButton b = makeKeyButton(String.valueOf(c).toUpperCase(), keyListener);
-                rowPanel.add(b);
-            }
-            add(rowPanel);
-        }
-
-        JPanel control = new JPanel();
-        control.setLayout(new BoxLayout(control, BoxLayout.Y_AXIS));
-
-        //JButton enter = makeKeyButton("ENTER", keyListener);
-        JButton back = makeKeyButton("BACK", keyListener);
-
-       //control.add(enter);
-        control.add(Box.createVerticalStrut(6)); // small gap
-        control.add(back);
-
-        add(control);*/
     }
 
     private JButton makeKeyButton(String label, ActionListener l) {

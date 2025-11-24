@@ -2,6 +2,7 @@ package wordle;
 
 import interface_adapter.wordle.WordleController;
 import interface_adapter.wordle.WordleViewModel;
+import view.FontLoader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,55 +26,120 @@ public class WordleView extends JPanel {
         this.controller = controller;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); // stack board and bottom vertically
 
+        setBackground(new Color(45, 45, 45));
         boardPanel = new BoardPanel();
 
         JPanel boardContainer = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         boardContainer.add(boardPanel);
         boardContainer.setAlignmentX(Component.CENTER_ALIGNMENT); // center horizontally
+        boardContainer.setBackground(new Color(45, 45, 45));
 
-        add(Box.createVerticalStrut(20)); // top spacing
+        // Create floating logo
+        JLabel logo = new JLabel("WORDLE");
+        logo.setFont(FontLoader.jersey10.deriveFont(72f)); // very large font
+        logo.setForeground(Color.WHITE);
+        logo.setSize(200, 100); // width and height of label
+        logo.setLocation(500, 50); // adjust x/y to fit the empty space on the right
+        logo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logo.setAlignmentY(Component.CENTER_ALIGNMENT);
+
+// Add logo to the WordleView panel (not inside boardContainer)
+        add(Box.createVerticalStrut(20)); // adds 50px of space above the logo
+        add(logo);
+
+        logo.setVisible(true);
+
+
+        //add(Box.createVerticalStrut(20)); // top spacing
         add(boardContainer);
-        add(Box.createVerticalStrut(20)); // spacing between board and keyboard
 
         boardContainer.add(boardPanel);
 
 
         JPanel bottom = new JPanel();
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
+        bottom.setBackground(new Color(45, 45, 45)); // explicit dark grey
         typingField = new JTextField();
         typingField.setAlignmentX(Component.CENTER_ALIGNMENT);
-        typingField.setFont(WordleStyles.KEY_FONT);
+        typingField.setFont(WordleStyles.KEY_FONT.deriveFont(20f));
         typingField.setHorizontalAlignment(JTextField.CENTER);
-        typingField.setColumns(10);
+        typingField.setColumns(7);
+        typingField.setMaximumSize(new Dimension(200, 40));
 
 
         // Pressing Enter on keyboard submits the guess
         typingField.addActionListener(e -> doSubmit());
+        // Prevent Tab from moving focus so we can capture it
+        typingField.setFocusTraversalKeysEnabled(false);
 
+        typingField.addKeyListener(new java.awt.event.KeyAdapter() {
+            private boolean newGameMode = false;
+
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent e) {
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_TAB) {
+                    e.consume(); // prevent default focus traversal
+                    newGameMode = true;
+                    statusLabel.setText("Press ENTER to start a new game");
+                } else if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER && newGameMode) {
+                    controller.startNewGame(userId);
+                    typingField.setText("");
+                    typingField.requestFocusInWindow();
+                    statusLabel.setText("New game started!");
+                    newGameMode = false;
+                } else if (newGameMode) {
+                    // Any other key cancels new game mode
+                    newGameMode = false;
+                    statusLabel.setText(" ");
+                }
+            }
+        });
 
 
         JPanel controls = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        controls.setBackground(new Color(45, 45, 45));
         controls.setAlignmentX(Component.CENTER_ALIGNMENT);
         JButton newGame = new JButton("New Game");
+        newGame.setFont(view.FontLoader.jersey10.deriveFont(20f)); // set jersey10 font, size 16
+        newGame.setBackground(new Color(70, 130, 180)); // example: green
+        newGame.setForeground(Color.WHITE); // text color
+        newGame.setOpaque(true);
+        newGame.setBorderPainted(false);
         newGame.addActionListener(e -> {
             controller.startNewGame(userId);
             typingField.setText("");
             typingField.requestFocusInWindow();
+            //keyboardPanel.resetKeys();
         });
+
 
         controls.add(newGame);
 
         JButton submit = new JButton("Submit");
+        submit.setFont(view.FontLoader.jersey10.deriveFont(20f));
+        submit.setBackground(new Color(34, 139, 34)); // steel blue example
+        submit.setForeground(Color.WHITE);
+        submit.setOpaque(true);
+        submit.setBorderPainted(false);
         submit.addActionListener(e -> doSubmit());
+
         controls.add(submit);
 
         JButton clear = new JButton("Clear");
+        clear.setFont(view.FontLoader.jersey10.deriveFont(20f));
+        clear.setBackground(new Color(220, 20, 60)); // crimson example
+        clear.setForeground(Color.WHITE);
+        clear.setOpaque(true);
+        clear.setBorderPainted(false);
         clear.addActionListener(e -> typingField.setText(""));
+
         controls.add(clear);
+
 
         bottom.add(typingField, BorderLayout.NORTH);
 
         KeyboardPanel keyboard = new KeyboardPanel(new KeyListener());
+        keyboard.setBackground(new Color(45, 45, 45));
         keyboard.setAlignmentX(Component.CENTER_ALIGNMENT);
         bottom.add(keyboard, BorderLayout.CENTER);
         bottom.add(controls, BorderLayout.SOUTH);
@@ -81,6 +147,8 @@ public class WordleView extends JPanel {
         statusLabel = new JLabel(" ");
         statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        statusLabel.setForeground(Color.WHITE);
+        statusLabel.setFont(WordleStyles.KEY_FONT.deriveFont(15f));
 
         add(statusLabel);
         add(bottom);
@@ -99,6 +167,18 @@ public class WordleView extends JPanel {
         if (vm == null) return;
         boardPanel.setViewModel(vm);
         statusLabel.setText(vm.message != null ? vm.message : " ");
+        // Update status message
+        if (vm.finished) {
+            if (vm.won) {
+                statusLabel.setText("You win! TAB + ENTER to play again");
+            } else {
+                statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". To play again, TAB + ENTER");
+            }
+        } else {
+            // Normal message
+            statusLabel.setText(vm.message != null ? vm.message : " ");
+        }
+
         repaint();
     }
 
@@ -112,14 +192,22 @@ public class WordleView extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             String cmd = e.getActionCommand();
-            if ("ENTER".equals(cmd)) doSubmit();
-            else if ("BACK".equals(cmd)) {
+
+            // Backspace button
+            if ("BACK".equals(cmd) || "<-".equals(cmd)) {
                 String t = typingField.getText();
                 if (!t.isEmpty()) typingField.setText(t.substring(0, t.length() - 1));
-            } else {
-                // append letter
-                typingField.setText(typingField.getText() + cmd.toLowerCase());
+                return;
             }
+
+            // Letters and normal keys
+            if ("ENTER".equals(cmd)) {
+                doSubmit();
+                return;
+            }
+
+            // Append letters
+            typingField.setText(typingField.getText() + cmd.toLowerCase());
         }
     }
 }
