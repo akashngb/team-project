@@ -74,6 +74,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void initializeBoard() {
+        // Restarting the board from scratch, restarting
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 board[i][j] = "";
@@ -86,6 +87,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     public void loadPosition(String fen) {
+        // Changing the board to whatever the fen that is passed in
         initializeBoard();
         possibleMoves.clear();
         selectedSquare = null;
@@ -114,6 +116,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void setupMouseListeners() {
+        // Listening for the mouse actions
         MouseAdapter mouseHandler = new MouseAdapter() {
             private Point currentMousePos = null;
 
@@ -139,6 +142,7 @@ public class ChessBoardPanel extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                // When releasing the mouse, it passes the coordinates of the resulting location to determine if the move was correct
                 if (isAnimating || dragStart == null) {
                     dragStart = null;
                     draggedPiece = null;
@@ -187,6 +191,7 @@ public class ChessBoardPanel extends JPanel {
     }
 
     private void clearSelection() {
+        // Clearing the information of the piece selected at this moment
         selectedSquare = null;
         possibleMoves.clear();
         repaint();
