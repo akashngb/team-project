@@ -27,7 +27,6 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
     private SignupController signupController = null;
 
     private final JButton signUp;
-    private final JButton cancel;
     private final JButton toLogin;
 
     public SignupView(SignupViewModel signupViewModel) {
@@ -59,10 +58,6 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         signUp = new JButton(SignupViewModel.SIGNUP_BUTTON_LABEL);
         signUp.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(signUp);
-        cancel = new JButton(SignupViewModel.CANCEL_BUTTON_LABEL);
-        cancel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
-        buttons.add(cancel);
-
 
         ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
         background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
@@ -97,8 +92,6 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
                     }
                 }
         );
-
-        cancel.addActionListener(this);
 
         addUsernameListener();
         addPasswordListener();

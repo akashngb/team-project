@@ -1,5 +1,6 @@
 package view;
 
+import interface_adapter.ViewManagerModel;
 import interface_adapter.login.LoginController;
 import interface_adapter.login.LoginState;
 import interface_adapter.login.LoginViewModel;
@@ -30,10 +31,10 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
     private final JLabel passwordErrorField = new JLabel();
 
     private final JButton logIn;
-    private final JButton cancel;
+    private final JButton goToSignUp;
     private LoginController loginController = null;
 
-    public LoginView(LoginViewModel loginViewModel) {
+    public LoginView(LoginViewModel loginViewModel, ViewManagerModel viewManagerModel) {
         this.loginViewModel = loginViewModel;
         this.loginViewModel.addPropertyChangeListener(this);
 
@@ -51,12 +52,12 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
                 passwordLabel, passwordInputField);
 
         final JPanel buttons = new JPanel();
-        logIn = new JButton("log in");
+        logIn = new JButton("Log In");
         logIn.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
         buttons.add(logIn);
-        cancel = new JButton("cancel");
-        cancel.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
-        buttons.add(cancel);
+        goToSignUp = new JButton("Create Account");
+        goToSignUp.setFont(FontLoader.jersey10.deriveFont(Font.BOLD, 18f));
+        buttons.add(goToSignUp);
 
         ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
         background.setLayout(new BoxLayout(background, BoxLayout.Y_AXIS));
@@ -65,24 +66,30 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         usernameInfo.setOpaque(false);
         passwordInfo.setOpaque(false);
         usernameErrorField.setOpaque(false);
+        passwordErrorField.setOpaque(false);
         buttons.setOpaque(false);
 
         logIn.addActionListener(
-                new ActionListener() {
-                    public void actionPerformed(ActionEvent evt) {
-                        if (evt.getSource().equals(logIn)) {
-                            final LoginState currentState = loginViewModel.getState();
+                evt -> {
+                    if (evt.getSource().equals(logIn)) {
+                        final LoginState currentState = loginViewModel.getState();
 
-                            loginController.execute(
-                                    currentState.getUsername(),
-                                    currentState.getPassword()
-                            );
-                        }
+                        loginController.execute(
+                                currentState.getUsername(),
+                                currentState.getPassword()
+                        );
                     }
                 }
         );
 
-        cancel.addActionListener(this);
+        goToSignUp.addActionListener(
+                evt -> {
+                    if (evt.getSource().equals(goToSignUp)) {
+                        viewManagerModel.setState("sign up");
+                        viewManagerModel.firePropertyChange();
+                    }
+                }
+        );
 
         usernameInputField.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -138,6 +145,7 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         background.add(usernameInfo);
         background.add(usernameErrorField);
         background.add(passwordInfo);
+        background.add(passwordErrorField);
         background.add(buttons);
 
     }
