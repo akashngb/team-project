@@ -210,11 +210,11 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             System.out.println("Navigating to Screen One");
             // Placeholder for new controller.execute() for Screen One
         } else if (evt.getSource().equals(wordleButton)) {
-            System.out.println("Navigating to Screen Two");
-            // Placeholder for new controller.execute() for Screen Two
+            viewManagerModel.setState("WORDLE");
+            viewManagerModel.firePropertyChange();
         } else if (evt.getSource().equals(chessButton)) {
-            System.out.println("Navigating to Screen Three");
-            // Placeholder for new controller.execute() for Screen Three
+            viewManagerModel.setState("CHESS-PUZZLE");
+            viewManagerModel.firePropertyChange();
         }
     }
 

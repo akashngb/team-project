@@ -180,9 +180,9 @@ public class MongoAppBuilder {
         final JFrame application = new JFrame("User Login - MongoDB");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        // Make the window non-resizable
         application.setMinimumSize(new Dimension(1300, 700));
-        application.setResizable(false);
+        application.setResizable(false); // Make the window non-resizable
+
 
         // Add shutdown hook to properly close MongoDB connection
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
