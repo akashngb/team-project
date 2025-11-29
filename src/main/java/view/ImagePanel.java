@@ -35,16 +35,34 @@ public class ImagePanel extends JPanel {
      */
     @Override
     protected void paintComponent(Graphics g) {
-        // Call the superclass method first to paint the panel's base
         super.paintComponent(g);
 
-        // Draw the background image
         if (backgroundImage != null) {
-            // This command draws the image, stretching it to fill the
-            // entire panel (getWidth() and getHeight())
-            g.drawImage(backgroundImage, 0, 0, this.getWidth(), this.getHeight(), this);
+            int panelW = getWidth();
+            int panelH = getHeight();
+
+            int imgW = backgroundImage.getWidth(this);
+            int imgH = backgroundImage.getHeight(this);
+
+            if (imgW <= 0 || imgH <= 0) {
+                return;
+            }
+
+            double scale = Math.max(
+                    (double) panelW / imgW,
+                    (double) panelH / imgH
+            );
+
+            int drawW = (int) (imgW * scale);
+            int drawH = (int) (imgH * scale);
+
+            int x = (panelW - drawW) / 2;
+            int y = (panelH - drawH) / 2;
+
+            g.drawImage(backgroundImage, x, y, drawW, drawH, this);
         }
     }
+
 
     public void setBackgroundImage(String newBackgroundPath) {
         // FIX: Load the image using the ClassLoader to correctly find resources

@@ -2,6 +2,7 @@ package interface_adapter.blockblast;
 
 import entity.blockblast.Board;
 import entity.blockblast.GameState;
+import entity.blockblast.PieceColor;
 import use_case.blockblast.PlacePieceOutputBoundary;
 import use_case.blockblast.PlacePieceResponseModel;
 
@@ -15,19 +16,19 @@ public class BlockBlastPresenter implements PlacePieceOutputBoundary {
         Board endBoard = endgamestate.getBoard();
         int rows = endBoard.getRows();
         int cols = endBoard.getCols();
-        boolean[][] boardCopy = new boolean[rows][cols];
+        PieceColor[][] colorGrid = endBoard.getGrid();
+        boolean[][] occupied = new boolean[rows][cols];
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                occupied[r][c] = (colorGrid[r][c] != null);
+            }
+        }
         int score = endgamestate.getScore();
         boolean gameOver = endgamestate.isGameOver();
 
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
-                boardCopy[r][c] = endBoard.isFilled(r, c);
-            }
-        }
-
-        viewModel.setState(boardCopy, endgamestate.getScore(), endgamestate.isGameOver(), "", endgamestate.getCurrentPieces());
+        viewModel.setState(occupied, colorGrid, endgamestate.getScore(), endgamestate.isGameOver(), "", endgamestate.getCurrentPieces());
     }
     public void prepareFailView(String message){
-        viewModel.setState(viewModel.getBoard(), viewModel.getScore(), viewModel.isGameOver(), message, viewModel.getPieces());
+        viewModel.setState(viewModel.getBoard(), viewModel.getCellColors(), viewModel.getScore(), viewModel.isGameOver(), message, viewModel.getPieces());
     }
 }

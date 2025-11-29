@@ -1,14 +1,12 @@
 package app.blockblast;
 
-import entity.blockblast.Board;
-import entity.blockblast.GameState;
-import entity.blockblast.Piece;
-import entity.blockblast.PieceGenerator;
+import entity.blockblast.*;
 import interface_adapter.blockblast.BlockBlastController;
 import interface_adapter.blockblast.BlockBlastPresenter;
 import interface_adapter.blockblast.BlockBlastViewModel;
 import use_case.blockblast.PlacePieceInputBoundary;
 import use_case.blockblast.PlacePieceInteractor;
+import view.ImagePanel;
 import view.blockblast.BlockBlastView;
 
 import javax.swing.*;
@@ -36,26 +34,37 @@ public class BlockBlastAppBuilder {
 
         BlockBlastView view = new BlockBlastView(viewModel, controller);
 
+        ImagePanel background = new ImagePanel("/images/blockblast_bg.png");
+        background.setLayout(new BorderLayout());
+        view.setOpaque(false);
+        background.add(view, BorderLayout.CENTER);
+
         boolean[][] initialBoard = new boolean[board.getRows()][board.getCols()];
-        viewModel.setState(initialBoard,
+        PieceColor[][] initialColors = board.getGrid();
+        viewModel.setState(
+                initialBoard,
+                initialColors,
                 gameState.getScore(),
                 gameState.isGameOver(),
                 "",
-                gameState.getCurrentPieces());
+                gameState.getCurrentPieces()
+        );
 
         JFrame frame = new JFrame("Block Blast");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setContentPane(view);
-        frame.setMinimumSize(new Dimension(1300, 700));
+        frame.setContentPane(background);
+
+        frame.setSize(1300, 700);
         frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
         frame.setResizable(false);
-        frame.pack();
 
         return frame;
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> buildFrame().setVisible(true));
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = buildFrame();
+            frame.setVisible(true);
+        });
     }
 }

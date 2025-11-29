@@ -12,4 +12,7 @@ public class BlockBlastController {
         PlacePieceRequestModel pieceRequestModel = new PlacePieceRequestModel(pieceIndex, row, col);
         placePieceUseCase.execute(pieceRequestModel);
     }
+    public void newGame() {
+        placePieceUseCase.newGame();
+    }
 }
