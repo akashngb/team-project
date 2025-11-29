@@ -62,6 +62,22 @@ public class PlacePieceInteractor implements PlacePieceInputBoundary {
         presenter.prepareSuccessView(new PlacePieceResponseModel(gameState));
     }
 
+    @Override
+    public void newGame() {
+        Board board = gameState.getBoard();
+        board.clear();
+
+        Piece[] pieces = gameState.getCurrentPieces();
+        for (int i = 0; i < pieces.length; i++) {
+            pieces[i] = generator.generateRandomPiece();
+        }
+        gameState.setCurrentPieces(pieces);
+
+        gameState.setScore(0);
+        gameState.setGameOver(false);
+
+        presenter.prepareSuccessView(new PlacePieceResponseModel(gameState));
+    }
 
     private boolean allPiecesUsed(Piece[] pieces) {
         for (Piece p : pieces) {
