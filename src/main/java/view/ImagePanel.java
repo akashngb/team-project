@@ -50,8 +50,7 @@ public class ImagePanel extends JPanel {
 
             double scale = Math.max(
                     (double) panelW / imgW,
-                    (double) panelH / imgH
-            );
+                    (double) panelH / imgH);
 
             int drawW = (int) (imgW * scale);
             int drawH = (int) (imgH * scale);
@@ -63,6 +62,9 @@ public class ImagePanel extends JPanel {
         }
     }
 
+    public Image getImage() {
+        return this.backgroundImage;
+    }
 
     public void setBackgroundImage(String newBackgroundPath) {
         // FIX: Load the image using the ClassLoader to correctly find resources
