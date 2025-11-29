@@ -61,7 +61,6 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         contentPanel.add(image, BorderLayout.CENTER);
         contentPanel.add(title, BorderLayout.SOUTH);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        // OLD: contentPanel.setOpaque(false); // REMOVED: Now set to true above
 
         // Create the transparent button wrapper
         JButton button = new JButton();
@@ -162,14 +161,11 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
                 JButton button = (JButton) e.getSource();
                 String newBackgroundPath = defaultBackgroundPath;
 
-                // 1. Remove the border from the currently selected button (the old one)
                 if (currentlySelectedButton != null) {
                     currentlySelectedButton.setBorderPainted(false);
                     currentlySelectedButton.setBorder(defaultBorder);
                 }
 
-                // 2. Determine the new path (the paths are the same as the default background,
-                // but we keep the logic clean)
                 if (button.equals(blockBlastButton)) {
                     newBackgroundPath = "/images/blockblast_background.jpg";
                 } else if (button.equals(wordleButton)) {
@@ -178,10 +174,8 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
                     newBackgroundPath = "/images/chess_background.jpg";
                 }
 
-                // 3. Set the new background image
                 backgroundScreen.setBackgroundImage(newBackgroundPath);
 
-                // 4. Apply the floating border (the hover effect) to the current button
                 Border hoverBorder = BorderFactory.createRaisedBevelBorder();
                 button.setBorderPainted(true);
                 button.setBorder(hoverBorder);
