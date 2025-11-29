@@ -19,6 +19,8 @@ public class WordleView extends JPanel {
     private final BoardPanel boardPanel;
     private final JTextField typingField;
     private final JLabel statusLabel;
+    private int score = 0; // number of games won
+    private final JLabel scoreLabel;
 
     private String userId = "default-user"; // replace with actual logged-in userId integration
 
@@ -46,6 +48,17 @@ public class WordleView extends JPanel {
 // Add logo to the WordleView panel (not inside boardContainer)
         add(Box.createVerticalStrut(20)); // adds 50px of space above the logo
         add(logo);
+
+
+        scoreLabel = new JLabel("Score: 0");
+        scoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        scoreLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        scoreLabel.setForeground(Color.WHITE);
+        scoreLabel.setFont(WordleStyles.KEY_FONT.deriveFont(18f));
+        add(scoreLabel);
+
+
+        add(Box.createVerticalStrut(10));
 
         logo.setVisible(true);
 
@@ -149,8 +162,8 @@ public class WordleView extends JPanel {
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
         statusLabel.setForeground(Color.WHITE);
         statusLabel.setFont(WordleStyles.KEY_FONT.deriveFont(15f));
-
         add(statusLabel);
+
         add(bottom);
         add(Box.createVerticalStrut(20)); // optional bottom spacing
 
@@ -170,8 +183,13 @@ public class WordleView extends JPanel {
         // Update status message
         if (vm.finished) {
             if (vm.won) {
+                score++;
                 statusLabel.setText("You win! TAB + ENTER to play again");
+                scoreLabel.setText("Score: " + score);
             } else {
+                score--;
+                if (score < 0) score = 0;
+                scoreLabel.setText("Score: " + score);
                 statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". To play again, TAB + ENTER");
             }
         } else {
