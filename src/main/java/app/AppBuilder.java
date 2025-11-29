@@ -150,9 +150,11 @@ public class AppBuilder {
         // Controller
         wordleController = new WordleController(startGameInteractor, submitGuessInteractor);
 
-        // View
-        wordleView = new WordleView(wordleController, vm -> {}); // presenter updates via lambda above
+        wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
         cardPanel.add(wordleView, "WORDLE");
+
 
         return this;
     }
