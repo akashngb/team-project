@@ -17,6 +17,11 @@ public class SubmitGuessInteractor implements SubmitGuessInputBoundary {
     }
 
     @Override
+    public int getScore(String userId) {
+        return sessionGateway.getScore(userId);
+    }
+
+    @Override
     public void submitGuess(SubmitGuessInputData request) {
         String userId = request.getUserId();
         WordleGame game = sessionGateway.load(userId);
@@ -48,20 +53,46 @@ public class SubmitGuessInteractor implements SubmitGuessInputBoundary {
                     gameState.isFinished(),
                     gameState.isWon(),
                     null, // answer hidden
-                    "'" + guess + "' is not a valid word." // message only
+                    "'" + guess + "' is not a valid word."
             );
-            presenter.presentGuessResult(out); // update view model but preserve guesses
+            presenter.presentGuessResult(out); // update view modle
             return;
         }
 
         try {
             Guess g = game.submitGuess(guess);
-            sessionGateway.save(userId, game);
-            WordleOutputData out = new WordleOutputData(game.getGuesses(), WordleGame.MAX_ATTEMPTS - game.getGuesses().size(), game.isFinished(), game.isWon(), game.isFinished() ? game.getAnswer() : null, "Guess accepted");
-            presenter.presentGuessResult(out);
+
             if (game.isFinished()) {
-                sessionGateway.remove(userId); // clear session
+
+                if (game.isWon()) {
+                    int guessesUsed = game.getGuesses().size();
+                    int points = Math.max(0, 6 - guessesUsed);
+                    sessionGateway.addScore(userId, points);
+                } else {
+                    // Penalty for losing
+                    sessionGateway.addScore(userId, -1); // subtract 1 point
+                }
+
+                sessionGateway.remove(userId);
             }
+            sessionGateway.save(userId, game);
+
+            WordleOutputData out = new WordleOutputData(
+                    game.getGuesses(),
+                    WordleGame.MAX_ATTEMPTS - game.getGuesses().size(),
+                    game.isFinished(),
+                    game.isWon(),
+                    game.isFinished() ? game.getAnswer() : null,
+                    "Guess accepted"
+            );
+
+            presenter.presentGuessResult(out);
+
+            if (game.isFinished()) {
+                sessionGateway.remove(userId);
+            }
+
+
         } catch (Exception e) {
             presenter.presentError("Error submitting guess: " + e.getMessage());
         }

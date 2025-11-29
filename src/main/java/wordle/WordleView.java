@@ -2,6 +2,7 @@ package wordle;
 
 import interface_adapter.wordle.WordleController;
 import interface_adapter.wordle.WordleViewModel;
+
 import view.FontLoader;
 
 import javax.swing.*;
@@ -19,7 +20,6 @@ public class WordleView extends JPanel {
     private final BoardPanel boardPanel;
     private final JTextField typingField;
     private final JLabel statusLabel;
-    private int score = 0; // number of games won
     private final JLabel scoreLabel;
 
     private String userId = "default-user"; // replace with actual logged-in userId integration
@@ -182,15 +182,14 @@ public class WordleView extends JPanel {
         statusLabel.setText(vm.message != null ? vm.message : " ");
         // Update status message
         if (vm.finished) {
+            int updatedScore = controller.getScore(userId);
+            scoreLabel.setText("Score: " + updatedScore);
             if (vm.won) {
-                score++;
                 statusLabel.setText("You win! TAB + ENTER to play again");
-                scoreLabel.setText("Score: " + score);
             } else {
-                score--;
-                if (score < 0) score = 0;
-                scoreLabel.setText("Score: " + score);
-                statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". To play again, TAB + ENTER");
+                statusLabel.setText("You lose! The answer was "
+                        + vm.answerIfFinished.toUpperCase()
+                        + ". TAB + ENTER for a new game");
             }
         } else {
             // Normal message

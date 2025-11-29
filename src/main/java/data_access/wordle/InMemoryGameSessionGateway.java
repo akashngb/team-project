@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class InMemoryGameSessionGateway implements GameSessionGateway {
     private final Map<String, WordleGame> store = new ConcurrentHashMap<>();
+    private final Map<String, Integer> scores = new ConcurrentHashMap<>();
+
 
     @Override
     public void save(String userId, WordleGame game) {
@@ -30,4 +32,24 @@ public class InMemoryGameSessionGateway implements GameSessionGateway {
         if (userId == null) return;
         store.remove(userId);
     }
+
+    @Override
+    public int getScore(String userId) {
+        if (userId == null) return 0;
+        return scores.getOrDefault(userId, 0);
+    }
+
+    @Override
+    public void addScore(String userId, int points) {
+        if (userId == null) return;
+        int current = scores.getOrDefault(userId, 0);
+        int updated = Math.max(0, current + points); // prevent negative scores
+        scores.put(userId, updated);
+    }
+
+    @Override
+    public void setScore(String userId, int score) {
+        scores.put(userId, score);
+    }
+
 }
