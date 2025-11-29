@@ -55,10 +55,8 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
 
-        // --- ADDED FIXES BELOW ---
         contentPanel.setBackground(faintBackground); // Apply faint background color
         contentPanel.setOpaque(true); // Make the panel fully opaque so the background color is visible
-        // --- END ADDED FIXES ---
 
         contentPanel.add(image, BorderLayout.CENTER);
         contentPanel.add(title, BorderLayout.SOUTH);
@@ -188,7 +186,6 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
                 button.setBorderPainted(true);
                 button.setBorder(hoverBorder);
 
-                // 5. IMPORTANT: Update the currently selected button
                 currentlySelectedButton = button;
             }
         };
