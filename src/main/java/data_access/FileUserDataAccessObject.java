@@ -164,9 +164,22 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
      *
      * @param user the user with the updated highscores
      */
-    public void changeHighscore(User user) {
-        accounts.put(user.getName(), user);
+    @Override
+    public void changeHighscore(String username, String gameName, Integer score) {
+        User user = accounts.get(username);
+        if (user != null) {
+            user.getHighscores().put(gameName, score);
+        }
         save();
+    }
+
+    @Override
+    public Map<String, Integer> getHighscoresByName(String username) {
+        User user = accounts.get(username);
+        if (user != null) {
+            return new HashMap<>(user.getHighscores());
+        }
+        return new HashMap<>();
     }
 
     @Override
