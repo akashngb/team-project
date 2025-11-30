@@ -1,50 +1,69 @@
 package view.blockblast;
 
 import entity.blockblast.Piece;
-import entity.blockblast.Position;
+import entity.blockblast.PieceColor;
 import interface_adapter.blockblast.BlockBlastController;
 import interface_adapter.blockblast.BlockBlastViewModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 public class BlockBlastView extends JPanel implements PropertyChangeListener {
-
-    private static final int CELL_SIZE      = 30;
-    private static final int BOARD_ROWS     = 8;
-    private static final int BOARD_COLS     = 8;
-    private static final int OFFSET_Y       = 40;
-    private static final int PREVIEW_HEIGHT = 80;
 
     private final BlockBlastViewModel viewModel;
     private final BlockBlastController controller;
 
+    private static final int CELL_SIZE = 50;
+    private static final int OFFSET_Y  = 100;
+
+    private static final int PREVIEW_CELL_SIZE = 26;
+    private static final int PREVIEW_BOX_SIZE  = PREVIEW_CELL_SIZE * 4;
+    private static final int PREVIEW_MARGIN    = 20;
+    private static final Color GRID_COLOR = new Color(220, 230, 255, 160);
+
     private final JLabel scoreLabel;
     private final JLabel messageLabel;
+    private final JButton newGameButton;
 
-    private int selectedPieceIndex = 0;
     private final JPanel previewPanel;
+    private int selectedPieceIndex = -1;
 
-    public BlockBlastView(BlockBlastViewModel viewModel, BlockBlastController controller) {
+    public BlockBlastView(BlockBlastViewModel viewModel,
+                          BlockBlastController controller) {
         this.viewModel = viewModel;
         this.controller = controller;
         this.viewModel.addPropertyChangeListener(this);
-
         this.setLayout(new BorderLayout());
-        int width  = BOARD_COLS * CELL_SIZE;
-        int height = OFFSET_Y + BOARD_ROWS * CELL_SIZE + PREVIEW_HEIGHT;
-        this.setPreferredSize(new Dimension(width, height));
+        this.setOpaque(false);
 
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topBar.setOpaque(false);
         scoreLabel   = new JLabel("Score: 0");
         messageLabel = new JLabel("");
+        scoreLabel.setForeground(Color.WHITE);
+        scoreLabel.setFont(scoreLabel.getFont().deriveFont(Font.BOLD, 24f));
+        messageLabel.setForeground(Color.YELLOW);
+        messageLabel.setFont(messageLabel.getFont().deriveFont(Font.BOLD, 18f));
+        newGameButton = new JButton("New Game");
+        newGameButton.setFocusPainted(false);
+        newGameButton.setBackground(new Color(255, 255, 255, 220));
+        newGameButton.setForeground(Color.BLACK);
+        newGameButton.setFont(newGameButton.getFont().deriveFont(Font.BOLD, 16f));
+        newGameButton.addActionListener(e -> {
+            selectedPieceIndex = -1; // 选中状态也一起清空
+            controller.newGame();
+        });
+
         topBar.add(scoreLabel);
+        topBar.add(Box.createHorizontalStrut(30));
+        topBar.add(newGameButton);
+        topBar.add(Box.createHorizontalStrut(30));
         topBar.add(messageLabel);
-        this.add(topBar, BorderLayout.NORTH);
+        add(topBar, BorderLayout.NORTH);
 
         previewPanel = new JPanel() {
             @Override
@@ -53,8 +72,9 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
                 drawPreviews(g);
             }
         };
-        previewPanel.setPreferredSize(new Dimension(width, PREVIEW_HEIGHT));
-        this.add(previewPanel, BorderLayout.SOUTH);
+        previewPanel.setOpaque(false);
+        previewPanel.setPreferredSize(new Dimension(400, PREVIEW_BOX_SIZE + 2 * PREVIEW_MARGIN));
+        add(previewPanel, BorderLayout.SOUTH);
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -71,27 +91,185 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
         });
     }
 
+    private int getBoardOffsetX(boolean[][] board) {
+        int rows = board.length;
+        int cols = board[0].length;
+        int boardWidth = cols * CELL_SIZE;
+        int panelWidth = getWidth();
+        return Math.max(0, (panelWidth - boardWidth) / 2);
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        boolean[][] board = viewModel.getBoard();
+        PieceColor[][] colors = viewModel.getCellColors();
+        if (board == null) {
+            return;
+        }
+
+        int rows = board.length;
+        int cols = board[0].length;
+        int offsetX = getBoardOffsetX(board);
+
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                int x = offsetX + c * CELL_SIZE;
+                int y = OFFSET_Y + r * CELL_SIZE;
+
+                g.setColor(GRID_COLOR);
+                g.drawRect(x, y, CELL_SIZE, CELL_SIZE);
+
+                if (board[r][c]) {
+                    Color fill = toAwtColor(colors[r][c]);
+                    g.setColor(fill);
+                    g.fillRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+
+                    g.setColor(Color.WHITE);
+                    g.drawRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+                }
+            }
+        }
+
+    }
+
+    private Color toAwtColor(PieceColor pc) {
+        if (pc == null) return Color.BLUE;
+        switch (pc) {
+            case RED:    return Color.RED;
+            case GREEN:  return Color.GREEN;
+            case BLUE:   return Color.BLUE;
+            case YELLOW: return Color.YELLOW;
+            case ORANGE: return Color.ORANGE;
+            case PURPLE: return new Color(128, 0, 128);
+            case CYAN:   return Color.CYAN;
+            default:     return Color.BLUE;
+        }
+    }
+
+    private void handleBoardClick(MouseEvent e) {
+        if (!SwingUtilities.isLeftMouseButton(e)) {
+            return;
+        }
+
+        if (selectedPieceIndex < 0) {
+            return;
+        }
 
         boolean[][] board = viewModel.getBoard();
         if (board == null) {
             return;
         }
 
-        for (int r = 0; r < BOARD_ROWS; r++) {
-            for (int c = 0; c < BOARD_COLS; c++) {
-                int x = c * CELL_SIZE;
-                int y = OFFSET_Y + r * CELL_SIZE;
+        int rows = board.length;
+        int cols = board[0].length;
 
+        int x = e.getX();
+        int y = e.getY();
+
+        if (y < OFFSET_Y) {
+            return;
+        }
+
+        int offsetX = getBoardOffsetX(board);
+        int boardWidth  = cols * CELL_SIZE;
+        int boardHeight = rows * CELL_SIZE;
+
+        if (x < offsetX || x >= offsetX + boardWidth) {
+            return;
+        }
+        if (y < OFFSET_Y || y >= OFFSET_Y + boardHeight) {
+            return;
+        }
+
+        int col = (x - offsetX) / CELL_SIZE;
+        int row = (y - OFFSET_Y) / CELL_SIZE;
+
+        controller.placePiece(selectedPieceIndex, row, col);
+    }
+
+    private int getPreviewOffsetX() {
+        int totalWidth = 3 * PREVIEW_BOX_SIZE + 4 * PREVIEW_MARGIN;
+        int panelWidth = previewPanel.getWidth();
+        return Math.max(0, (panelWidth - totalWidth) / 2);
+    }
+
+    private void drawPreviews(Graphics g) {
+        Piece[] pieces = viewModel.getPieces();
+        if (pieces == null) return;
+
+        int offsetX = getPreviewOffsetX();
+        int baseY   = 10;
+
+        for (int i = 0; i < 3; i++) {
+            int boxX = offsetX + PREVIEW_MARGIN + i * (PREVIEW_BOX_SIZE + PREVIEW_MARGIN);
+            int boxY = baseY;
+
+            g.setColor(Color.WHITE);
+            g.fillRect(boxX, boxY, PREVIEW_BOX_SIZE, PREVIEW_BOX_SIZE);
+
+            if (i == selectedPieceIndex) {
+                g.setColor(Color.BLACK);
+                ((Graphics2D) g).setStroke(new BasicStroke(2f));
+            } else {
                 g.setColor(Color.LIGHT_GRAY);
-                g.drawRect(x, y, CELL_SIZE, CELL_SIZE);
+                ((Graphics2D) g).setStroke(new BasicStroke(1f));
+            }
+            g.drawRect(boxX, boxY, PREVIEW_BOX_SIZE, PREVIEW_BOX_SIZE);
 
-                if (board[r][c]) {
-                    g.setColor(Color.BLUE);
-                    g.fillRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
-                }
+            Piece p = pieces[i];
+            if (p == null) continue;
+
+            int minRow = Integer.MAX_VALUE, maxRow = Integer.MIN_VALUE;
+            int minCol = Integer.MAX_VALUE, maxCol = Integer.MIN_VALUE;
+            for (var cell : p.getCells()) {
+                minRow = Math.min(minRow, cell.row);
+                maxRow = Math.max(maxRow, cell.row);
+                minCol = Math.min(minCol, cell.col);
+                maxCol = Math.max(maxCol, cell.col);
+            }
+            int pieceRows = maxRow - minRow + 1;
+            int pieceCols = maxCol - minCol + 1;
+
+            int piecePixelW = pieceCols * PREVIEW_CELL_SIZE;
+            int piecePixelH = pieceRows * PREVIEW_CELL_SIZE;
+
+            int startX = boxX + (PREVIEW_BOX_SIZE - piecePixelW) / 2;
+            int startY = boxY + (PREVIEW_BOX_SIZE - piecePixelH) / 2;
+
+            for (var cell : p.getCells()) {
+                int relRow = cell.row - minRow;
+                int relCol = cell.col - minCol;
+
+                int cellX = startX + relCol * PREVIEW_CELL_SIZE;
+                int cellY = startY + relRow * PREVIEW_CELL_SIZE;
+
+                g.setColor(toAwtColor(p.getColor()));
+                g.fillRect(cellX + 1, cellY + 1,
+                        PREVIEW_CELL_SIZE - 2, PREVIEW_CELL_SIZE - 2);
+            }
+        }
+    }
+
+    private void handlePreviewClick(MouseEvent e) {
+        int x = e.getX();
+        int y = e.getY();
+
+        int offsetX = getPreviewOffsetX();
+        int baseY   = 5;
+
+        for (int i = 0; i < 3; i++) {
+            int boxX = offsetX + PREVIEW_MARGIN + i * (PREVIEW_BOX_SIZE + PREVIEW_MARGIN);
+            int boxY = baseY;
+            int w    = PREVIEW_BOX_SIZE;
+            int h    = PREVIEW_BOX_SIZE;
+
+            if (x >= boxX && x <= boxX + w &&
+                    y >= boxY && y <= boxY + h) {
+                selectedPieceIndex = i;
+                previewPanel.repaint();
+                break;
             }
         }
     }
@@ -102,79 +280,5 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
         messageLabel.setText(viewModel.getMessage());
         repaint();
         previewPanel.repaint();
-    }
-
-    private void handleBoardClick(MouseEvent e) {
-        if (!SwingUtilities.isLeftMouseButton(e)) {
-            return;
-        }
-
-        int x = e.getX();
-        int y = e.getY();
-
-        if (y < OFFSET_Y) {
-            return;
-        }
-
-        int col = x / CELL_SIZE;
-        int row = (y - OFFSET_Y) / CELL_SIZE;
-
-        if (row < 0 || row >= BOARD_ROWS || col < 0 || col >= BOARD_COLS) {
-            return;
-        }
-
-        controller.placePiece(selectedPieceIndex, row, col);
-    }
-
-    private void handlePreviewClick(MouseEvent e) {
-        int x = e.getX();
-        int previewSize = 4 * 15;
-        int margin = 10;
-
-        for (int i = 0; i < 3; i++) {
-            int baseX = margin + i * (previewSize + margin);
-            int baseY = 10;
-            int w = previewSize;
-            int h = previewSize;
-
-            if (x >= baseX && x <= baseX + w &&
-                    e.getY() >= baseY && e.getY() <= baseY + h) {
-                selectedPieceIndex = i;
-                previewPanel.repaint();
-                break;
-            }
-        }
-    }
-
-    private void drawPreviews(Graphics g) {
-        Piece[] pieces = viewModel.getPieces();
-        if (pieces == null) {
-            return;
-        }
-
-        int cellSize    = 15;
-        int previewSize = 4 * cellSize;
-        int margin      = 10;
-
-        for (int i = 0; i < pieces.length; i++) {
-            Piece p = pieces[i];
-            if (p == null) continue;
-
-            int baseX = margin + i * (previewSize + margin);
-            int baseY = 10;
-
-            if (i == selectedPieceIndex) {
-                g.setColor(Color.DARK_GRAY);
-                g.drawRect(baseX - 3, baseY - 3, previewSize + 6, previewSize + 6);
-            }
-
-            g.setColor(Color.BLACK);
-            for (Position pos : p.getCells()) {
-                int x = baseX + pos.col * cellSize;
-                int y = baseY + pos.row * cellSize;
-                g.drawRect(x, y, cellSize, cellSize);
-                g.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
-            }
-        }
     }
 }

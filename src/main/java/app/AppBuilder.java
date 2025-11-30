@@ -114,18 +114,6 @@ public class AppBuilder {
         return this;
     }
 
-    public AppBuilder addChangePasswordUseCase() {
-        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new ChangePasswordPresenter(viewManagerModel,
-                loggedInViewModel);
-
-        final ChangePasswordInputBoundary changePasswordInteractor =
-                new ChangePasswordInteractor(userDataAccessObject, changePasswordOutputBoundary, userFactory);
-
-        ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
-        loggedInView.setChangePasswordController(changePasswordController);
-        return this;
-    }
-
     /**
      * Adds the Logout Use Case to the application.
      * @return this builder
@@ -160,11 +148,13 @@ public class AppBuilder {
         SubmitGuessInteractor submitGuessInteractor = new SubmitGuessInteractor(wordListDao, sessionGateway, wordlePresenter);
 
         // Controller
-        wordleController = new WordleController(startGameInteractor, submitGuessInteractor);
+        wordleController = new WordleController(startGameInteractor, submitGuessInteractor, sessionGateway);
 
-        // View
-        wordleView = new WordleView(wordleController, vm -> {}); // presenter updates via lambda above
+        wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
         cardPanel.add(wordleView, "WORDLE");
+
 
         return this;
     }
