@@ -1,36 +1,61 @@
+import use_case.login.*;
+import data_access.FileUserDataAccessObject;
+import entity.User;
+import entity.UserFactory; // Use the provided class
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import use_case.login.*;
-import entity.User;
+import java.io.File;
+import java.io.IOException;
+
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LoginInteractorTest {
 
-    private LoginUserDataAccessInterface mockDAO;
+    private FileUserDataAccessObject fileDAO;
     private LoginOutputBoundary mockPresenter;
     private LoginInteractor interactor;
+    private UserFactory userFactory;
+
+    private final String TEST_FILE_PATH = "test_login_users.csv";
+    private final String VALID_USERNAME = "ActualDAOUser";
+    private final String VALID_PASSWORD = "TestPassword999";
 
     @BeforeEach
-    void setUp() {
-        mockDAO = mock(LoginUserDataAccessInterface.class);
+    void setUp() throws IOException {
+        // Initialize dependencies
+        userFactory = new UserFactory(); // Instantiate the provided UserFactory class
         mockPresenter = mock(LoginOutputBoundary.class);
-        interactor = new LoginInteractor(mockDAO, mockPresenter);
+        
+        // Instantiate the actual DAO that reads/writes the file
+        fileDAO = new FileUserDataAccessObject(TEST_FILE_PATH, userFactory);
+        
+        // Set up known state: Insert the test user into the file using the real DAO's save logic
+        User userToSave = userFactory.create(VALID_USERNAME, VALID_PASSWORD);
+        if (!fileDAO.existsByName(VALID_USERNAME)) {
+            fileDAO.save(userToSave); 
+        }
+        
+        // Create Interactor, injecting the actual DAO
+        interactor = new LoginInteractor(fileDAO, mockPresenter);
     }
 
-    // Test Success Path
+    @AfterEach
+    void tearDown() {
+        // Delete the physical test file after each run
+        File file = new File(TEST_FILE_PATH);
+        if (file.exists()) {
+            file.delete();
+        }
+        // Also ensure the currentUsername state is clear on the DAO
+        fileDAO.setCurrentUsername(null);
+    }
+
+    // Test Success Path ---
     @Test
     void testLoginSuccess() {
-        String username = "ValidUser";
-        String password = "CorrectPassword123";
-        LoginInputData inputData = new LoginInputData(username, password);
-
-        // Mock DAO behavior for success
-        when(mockDAO.existsByName(username)).thenReturn(true);
-        User mockUser = mock(User.class);
-        when(mockUser.getName()).thenReturn(username);
-        when(mockUser.getPassword()).thenReturn(password);
-        when(mockDAO.get(username)).thenReturn(mockUser);
+        LoginInputData inputData = new LoginInputData(VALID_USERNAME, VALID_PASSWORD);
 
         interactor.execute(inputData);
 
@@ -38,52 +63,37 @@ public class LoginInteractorTest {
         verify(mockPresenter, times(1)).prepareSuccessView(any(LoginOutputData.class));
         verify(mockPresenter, never()).prepareFailView(anyString());
         
-        // Verify DAO method was called to set current user
-        verify(mockDAO, times(1)).setCurrentUsername(username);
+        // Assert the side effect: the actual DAO's state was updated
+        assertEquals(VALID_USERNAME, fileDAO.getCurrentUsername());
     }
 
-    // Test Failure: User Does Not Exist
+    // Test Failure: User Does Not Exist ---
     @Test
     void testLoginFailureUserNotFound() {
-        String username = "NonExistentUser";
-        String password = "AnyPassword";
-        LoginInputData inputData = new LoginInputData(username, password);
-
-        // Mock DAO behavior for failure (user not found)
-        when(mockDAO.existsByName(username)).thenReturn(false);
+        String nonExistentUser = "GhostUser" + System.currentTimeMillis();
+        LoginInputData inputData = new LoginInputData(nonExistentUser, VALID_PASSWORD);
 
         interactor.execute(inputData);
 
-        // Verify failure view preparation with correct message
-        verify(mockPresenter, times(1)).prepareFailView(username + ": Account does not exist.");
-        verify(mockPresenter, never()).prepareSuccessView(any(LoginOutputData.class));
+        // Verify failure view preparation
+        verify(mockPresenter, times(1)).prepareFailView(nonExistentUser + ": Account does not exist.");
         
-        // Verify DAO methods for getting user/setting current user were never called
-        verify(mockDAO, never()).get(anyString());
-        verify(mockDAO, never()).setCurrentUsername(anyString());
+        // Assert no side effect occurred
+        assertNull(fileDAO.getCurrentUsername());
     }
 
-    // Test Failure: Incorrect Password
+    // Test Failure: Incorrect Password ---
     @Test
     void testLoginFailureIncorrectPassword() {
-        String username = "ExistingUser";
-        String correctPassword = "CorrectPassword123";
-        String wrongPassword = "WrongPassword";
-        LoginInputData inputData = new LoginInputData(username, wrongPassword);
-
-        // Mock DAO behavior for failure (incorrect password)
-        when(mockDAO.existsByName(username)).thenReturn(true);
-        User mockUser = mock(User.class);
-        when(mockUser.getPassword()).thenReturn(correctPassword);
-        when(mockDAO.get(username)).thenReturn(mockUser);
+        LoginInputData inputData = new LoginInputData(VALID_USERNAME, "WrongPassword");
 
         interactor.execute(inputData);
 
-        // Verify failure view preparation with correct message
-        verify(mockPresenter, times(1)).prepareFailView("Incorrect password for \"" + username + "\".");
-        verify(mockPresenter, never()).prepareSuccessView(any(LoginOutputData.class));
+        // Verify failure view preparation
+        verify(mockPresenter, times(1)).prepareFailView("Incorrect password for \"" + VALID_USERNAME + "\".");
         
-        // Verify DAO method to set current user was never called
-        verify(mockDAO, never()).setCurrentUsername(anyString());
+        // Verify success view was not called and no side effect occurred
+        verify(mockPresenter, never()).prepareSuccessView(any(LoginOutputData.class));
+        assertNull(fileDAO.getCurrentUsername());
     }
 }
