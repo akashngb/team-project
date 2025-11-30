@@ -12,7 +12,9 @@ import use_case.signup.SignupUserDataAccessInterface;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -165,5 +167,28 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
     public void changeHighscore(User user) {
         accounts.put(user.getName(), user);
         save();
+    }
+
+    @Override
+    public List<User> getTopUsersForGame(String gameName, int limit) {
+        List<User> usersWithScores = new ArrayList<>();
+
+        // Filter users who have played this game
+        for (User user : accounts.values()) {
+            HashMap<String, Integer> highscores = new HashMap<>(user.getHighscores());
+            if (highscores.containsKey(gameName)) {
+                usersWithScores.add(user);
+            }
+        }
+
+        // Sort by score in descending order
+        usersWithScores.sort((u1, u2) -> {
+            Integer score1 = u1.getHighscores().get(gameName);
+            Integer score2 = u2.getHighscores().get(gameName);
+            return Integer.compare(score2, score1);
+        });
+
+        // Return top N users
+        return usersWithScores.subList(0, Math.min(limit, usersWithScores.size()));
     }
 }

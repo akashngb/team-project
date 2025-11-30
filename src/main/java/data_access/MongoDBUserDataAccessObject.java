@@ -18,9 +18,7 @@ import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * MongoDB implementation of the user data access object.
@@ -75,13 +73,23 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
             Document userDoc = usersCollection.find(filter).first();
 
             if (userDoc == null) {
-                throw new RuntimeException("User not found: " + username);
+                                throw new RuntimeException("User not found");
             }
 
             // Get the hashed password (stored in DB)
             String hashedPassword = userDoc.getString(PASSWORD_FIELD);
+
             // Get the HashMap highscores
-            Map highscores = userDoc.get(HIGHSCORES_FIELD, Map.class);
+            Map<String, Object> importedHighscores = userDoc.get(HIGHSCORES_FIELD, Map.class);
+            Map<String, Integer> highscores = new HashMap<>();
+            if (importedHighscores != null) {
+                for (Map.Entry<String, Object> entry : importedHighscores.entrySet()) {
+                    Object value = entry.getValue();
+                    if (value instanceof Integer) {
+                        highscores.put(entry.getKey(), (Integer) value);
+                    }
+                }
+            }
 
             // IMPORTANT: We return the hashed password here.
             // The LoginInteractor will need to be updated to use verifyPassword()
@@ -141,7 +149,7 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
     public void save(User user) {
         try {
             if (existsByName(user.getName())) {
-                throw new RuntimeException("User already exists: " + user.getName());
+                                throw new RuntimeException("Registration failed: username is unavailable.");
             }
 
             // Hash the password before storing (IMPORTANT for security!)
@@ -210,6 +218,53 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
         } catch (Exception ex) {
             return false;
+        }
+    }
+
+    @Override
+    public List<User> getTopUsersForGame(String gameName, int limit) {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        } else if (limit > 100) {
+            limit = 100;           // Cap limit to 100 to prevent excessive data retrieval
+        }
+        try {
+            // Create a field path for sorting (e.g., "highscores.BLOCKBLAST")
+            String sortField = HIGHSCORES_FIELD + "." + gameName;
+
+            // Query: Sort by the game's score in descending order with a limit
+            List<Document> topUserDocs = usersCollection
+                    .find(Filters.exists(sortField)) // Only users who have played this game
+                    .sort(new Document(sortField, -1)) // -1 for descending order
+                    .limit(limit)
+                    .into(new ArrayList<>());
+
+            List<User> topUsers = new ArrayList<>();
+
+            for (Document userDoc : topUserDocs) {
+                String username = userDoc.getString(USERNAME_FIELD);
+                String hashedPassword = userDoc.getString(PASSWORD_FIELD);
+
+                // Convert highscores
+                Map<String, Object> rawMap = userDoc.get(HIGHSCORES_FIELD, Map.class);
+                HashMap<String, Integer> highscores = new HashMap<>();
+
+                if (rawMap != null) {
+                    for (Map.Entry<String, Object> entry : rawMap.entrySet()) {
+                        Object value = entry.getValue();
+                        if (value instanceof Integer) {
+                            highscores.put(entry.getKey(), (Integer) value);
+                        }
+                    }
+                }
+
+                topUsers.add(userFactory.create(username, hashedPassword, highscores));
+            }
+
+            return topUsers;
+
+        } catch (MongoException ex) {
+            throw new RuntimeException("Error fetching leaderboard: " + ex.getMessage(), ex);
         }
     }
 
