@@ -57,7 +57,6 @@ public class MongoAppBuilder {
     final MongoDBUserDataAccessObject userDataAccessObject = new MongoDBUserDataAccessObject(
             SimpleMongoDBConfig.CONNECTION_STRING,
             SimpleMongoDBConfig.DATABASE_NAME,
-            SimpleMongoDBConfig.USERS_COLLECTION,
             userFactory
     );
 
