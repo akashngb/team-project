@@ -148,7 +148,7 @@ public class AppBuilder {
         SubmitGuessInteractor submitGuessInteractor = new SubmitGuessInteractor(wordListDao, sessionGateway, wordlePresenter);
 
         // Controller
-        wordleController = new WordleController(startGameInteractor, submitGuessInteractor);
+        wordleController = new WordleController(startGameInteractor, submitGuessInteractor, sessionGateway);
 
         wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
             if (wordleView != null) wordleView.setViewModel(vm);

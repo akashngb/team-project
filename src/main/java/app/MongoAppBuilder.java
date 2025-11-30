@@ -155,7 +155,7 @@ public class MongoAppBuilder {
         SubmitGuessInteractor submitGuessInteractor = new SubmitGuessInteractor(wordListDao, sessionGateway, wordlePresenter);
 
         // Controller
-        wordleController = new WordleController(startGameInteractor, submitGuessInteractor);
+        wordleController = new WordleController(startGameInteractor, submitGuessInteractor, sessionGateway);
 
         //View
         wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
