@@ -56,7 +56,12 @@ public class PieceGenerator {
                 cells.add(new Position(1, 2));
                 break;
         }
-
-        return new Piece(cells);
+        return new Piece(cells, randomColor());
     }
+
+    private PieceColor randomColor() {
+        PieceColor[] values = PieceColor.values();
+        return values[random.nextInt(values.length)];
+    }
+
 }

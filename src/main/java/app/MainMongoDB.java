@@ -15,7 +15,6 @@ public class MainMongoDB {
                     .addSignupUseCase()
                     .addLoginUseCase()
                     .addLogoutUseCase()
-                    .addChangePasswordUseCase()
                     .addWordleFeature()
                     .build();
 

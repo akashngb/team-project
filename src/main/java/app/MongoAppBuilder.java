@@ -124,18 +124,6 @@ public class MongoAppBuilder {
         return this;
     }
 
-    public MongoAppBuilder addChangePasswordUseCase() {
-        final ChangePasswordOutputBoundary changePasswordOutputBoundary =
-                new ChangePasswordPresenter(viewManagerModel, loggedInViewModel);
-
-        final ChangePasswordInputBoundary changePasswordInteractor =
-                new ChangePasswordInteractor(userDataAccessObject, changePasswordOutputBoundary, userFactory);
-
-        ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
-        loggedInView.setChangePasswordController(changePasswordController);
-        return this;
-    }
-
     public MongoAppBuilder addLogoutUseCase() {
         final LogoutOutputBoundary logoutOutputBoundary = new LogoutPresenter(viewManagerModel,
                 loggedInViewModel, loginViewModel);
@@ -169,9 +157,12 @@ public class MongoAppBuilder {
         // Controller
         wordleController = new WordleController(startGameInteractor, submitGuessInteractor, sessionGateway);
 
-        // View
-        wordleView = new WordleView(wordleController, vm -> {}); // presenter updates via lambda above
+        //View
+        wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
         cardPanel.add(wordleView, "WORDLE");
+
 
         return this;
     }
