@@ -1,12 +1,9 @@
 package view;
 
-import interface_adapter.ViewManagerModel;
-import interface_adapter.logged_in.ChangePasswordController;
 import interface_adapter.logged_in.ChangePasswordController; // Keep import for setter
 import interface_adapter.logged_in.LoggedInState;
 import interface_adapter.logged_in.LoggedInViewModel;
 import interface_adapter.logout.LogoutController;
-import app.blockblast.BlockBlastAppBuilder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +23,8 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
     private final String viewName = "logged in";
     private final LoggedInViewModel loggedInViewModel;
+    private final JLabel passwordErrorField = new JLabel();
+    private ChangePasswordController changePasswordController = null; // Keep the field for later use in case we use later
     private LogoutController logoutController;
 
     // New buttons for the menu options
@@ -33,7 +32,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private final JButton wordleButton;
     private final JButton chessButton;
     private final JButton logOutButton; // Keep the Log Out button
-    private final FadingImagePanel backgroundScreen;
+    private final ImagePanel backgroundScreen;
     private JButton currentlySelectedButton;
 
     private JButton createGameButton(String gameName, String imagePath, Font gameTitleFont) {
@@ -46,21 +45,14 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         JLabel image = new JLabel(icon);
         JLabel title = new JLabel(gameName, SwingConstants.CENTER);
         title.setFont(gameTitleFont);
-        title.setForeground(Color.BLACK); // Ensure text is visible against the light background
-
-        // Create the semi-transparent background color (e.g., White with 70% opacity)
-        final Color faintBackground = new Color(255, 255, 255, 180);
 
         // Create the content panel (Image + Title)
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BorderLayout());
-
-        contentPanel.setBackground(faintBackground); // Apply faint background color
-        contentPanel.setOpaque(true); // Make the panel fully opaque so the background color is visible
-
         contentPanel.add(image, BorderLayout.CENTER);
         contentPanel.add(title, BorderLayout.SOUTH);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        contentPanel.setOpaque(false);
 
         // Create the transparent button wrapper
         JButton button = new JButton();
@@ -74,25 +66,20 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         return button;
     }
 
-    private final ViewManagerModel viewManagerModel;
-
-    public LoggedInView(LoggedInViewModel loggedInViewModel, ViewManagerModel viewManagerModel) {
+    public LoggedInView(LoggedInViewModel loggedInViewModel) {
         this.loggedInViewModel = loggedInViewModel;
-        this.viewManagerModel = viewManagerModel;
         this.loggedInViewModel.addPropertyChangeListener(this);
 
         // Font Variables for Centralized Styling
-        final Font titleFont = FontLoader.jersey10.deriveFont(Font.PLAIN, 80f);
-        final Font gameTitleFont = FontLoader.jersey10.deriveFont(Font.PLAIN, 50f);
-        final Font buttonFont = FontLoader.jersey10.deriveFont(Font.PLAIN, 40f);
-        final Color customGray = new Color(0xD9D9D9);
-        final Border buttonPadding = BorderFactory.createEmptyBorder(3, 20, 3, 20); // 3px T/B, 20px L/R
+        final Font titleFont = FontLoader.jersey10.deriveFont(Font.BOLD, 48f);
+        final Font gameTitleFont = FontLoader.jersey10.deriveFont(Font.PLAIN, 30f);
+        final Font buttonFont = FontLoader.jersey10.deriveFont(Font.BOLD, 18f);
+
         // Apply Font to Title (Using FontLoader as in LoginView)
         final JLabel title = new JLabel("Select Game");
         title.setFont(titleFont);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setOpaque(false);
-        title.setForeground(Color.WHITE);
         // Game Panels and Buttons
 
         blockBlastButton = createGameButton("Block Blast", "/images/blockblast.png", gameTitleFont);
@@ -104,21 +91,16 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         // Log Out Button (retained and styled)
         logOutButton = new JButton("Log Out");
         logOutButton.setFont(buttonFont);
-        logOutButton.setForeground(Color.BLACK); // Set text color to black
-        logOutButton.setBackground(customGray); // Set background color to #D9D9D9
-        logOutButton.setBorder(buttonPadding); // Apply padding border
-        logOutButton.setBorderPainted(true); // Ensure padding is rendered
-        logOutButton.setFocusPainted(false); // Remove focus border
+        logOutButton.setOpaque(false);
 
-        backgroundScreen = new FadingImagePanel("/images/blockblast_background.jpg");
+        backgroundScreen = new ImagePanel("/images/blockblast_background.png");
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         backgroundScreen.setLayout(new BoxLayout(backgroundScreen, BoxLayout.Y_AXIS));
 
         this.add(backgroundScreen);
 
         // Horizontal Layout for Game Selection Panels
-        final JPanel gameSelectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // Center with more
-                                                                                                // horizontal gap
+        final JPanel gameSelectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // Center with more horizontal gap
         gameSelectionPanel.add(blockBlastButton); // Now these are the clickable game panels
         gameSelectionPanel.add(wordleButton);
         gameSelectionPanel.add(chessButton);
@@ -133,7 +115,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         contentPanel.add(Box.createRigidArea(new Dimension(0, 40))); // More space before Log Out
         contentPanel.add(logOutButton);
         logOutButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Ensure log out button is centered
-        contentPanel.add(Box.createVerticalStrut(50));
+
         // Add Action Listeners
         blockBlastButton.addActionListener(this);
         wordleButton.addActionListener(this);
@@ -149,37 +131,44 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
                             }
                         }
                     }
-                });
+                }
+        );
         // Apply Hover/Float Effect
 
         // Define the default border only (no need for a static hoverBorder)
         final Border defaultBorder = BorderFactory.createEmptyBorder();
-        final String defaultBackgroundPath = "/images/blockblast_background.jpg";
+        final String defaultBackgroundPath = "/images/blockblast_background.png";
         MouseAdapter hoverAdapter = new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
                 JButton button = (JButton) e.getSource();
                 String newBackgroundPath = defaultBackgroundPath;
 
+                // 1. Remove the border from the currently selected button (the old one)
                 if (currentlySelectedButton != null) {
                     currentlySelectedButton.setBorderPainted(false);
                     currentlySelectedButton.setBorder(defaultBorder);
                 }
 
+                // 2. Determine the new path (the paths are the same as the default background, but we keep the logic clean)
                 if (button.equals(blockBlastButton)) {
-                    newBackgroundPath = "/images/blockblast_background.jpg";
+                    newBackgroundPath = "/images/blockblast_background.png";
                 } else if (button.equals(wordleButton)) {
-                    newBackgroundPath = "/images/wordle_background.jpg";
+                    newBackgroundPath = "/images/wordle_background.png";
                 } else if (button.equals(chessButton)) {
                     newBackgroundPath = "/images/chess_background.jpg";
                 }
 
+                // 3. Set the new background image
                 backgroundScreen.setBackgroundImage(newBackgroundPath);
+                backgroundScreen.repaint();
 
+                // 4. Apply the floating border (the hover effect) to the current button
                 Border hoverBorder = BorderFactory.createRaisedBevelBorder();
                 button.setBorderPainted(true);
                 button.setBorder(hoverBorder);
 
+                // 5. IMPORTANT: Update the currently selected button
                 currentlySelectedButton = button;
             }
         };
@@ -208,21 +197,19 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
     /**
      * React to a button click that results in evt.
-     * 
      * @param evt the ActionEvent to react to
      */
     public void actionPerformed(ActionEvent evt) {
         // Implement navigation logic here later. For now, print a message.
         if (evt.getSource().equals(blockBlastButton)) {
-            JFrame frame = BlockBlastAppBuilder.buildFrame();
-            frame.setVisible(true);
+            System.out.println("Navigating to Screen One");
             // Placeholder for new controller.execute() for Screen One
         } else if (evt.getSource().equals(wordleButton)) {
-            viewManagerModel.setState("WORDLE");
-            viewManagerModel.firePropertyChange();
+            System.out.println("Navigating to Screen Two");
+            // Placeholder for new controller.execute() for Screen Two
         } else if (evt.getSource().equals(chessButton)) {
-            viewManagerModel.setState("CHESS-PUZZLE");
-            viewManagerModel.firePropertyChange();
+            System.out.println("Navigating to Screen Three");
+            // Placeholder for new controller.execute() for Screen Three
         }
     }
 
@@ -230,13 +217,15 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("state")) {
             final LoggedInState state = (LoggedInState) evt.getNewValue();
-        } else if (evt.getPropertyName().equals("password")) {
+        }
+        else if (evt.getPropertyName().equals("password")) {
             // Keep password related UI update logic, even if the password field is gone
             final LoggedInState state = (LoggedInState) evt.getNewValue();
             if (state.getPasswordError() == null) {
                 JOptionPane.showMessageDialog(this, "password updated for " + state.getUsername());
                 // Removed passwordInputField.setText("")
-            } else {
+            }
+            else {
                 JOptionPane.showMessageDialog(this, state.getPasswordError());
             }
         }
@@ -244,6 +233,10 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
     public String getViewName() {
         return viewName;
+    }
+
+    public void setChangePasswordController(ChangePasswordController changePasswordController) {
+        this.changePasswordController = changePasswordController;
     }
 
     public void setLogoutController(LogoutController logoutController) {

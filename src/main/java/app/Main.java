@@ -12,7 +12,7 @@ public class Main {
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addLogoutUseCase()
-                .addWordleFeature()
+                .addChangePasswordUseCase()
                 .build();
 
         application.pack();
