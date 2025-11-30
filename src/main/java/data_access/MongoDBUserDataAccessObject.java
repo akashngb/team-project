@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.mindrot.jbcrypt.BCrypt;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
+import use_case.leaderboard.LeaderBoardDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
@@ -28,7 +29,8 @@ import java.util.UUID;
 public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterface,
                                                      LoginUserDataAccessInterface,
                                                      ChangePasswordUserDataAccessInterface,
-                                                     LogoutUserDataAccessInterface {
+                                                     LogoutUserDataAccessInterface,
+                                                     LeaderBoardDataAccessInterface {
 
     private static final String USERNAME_FIELD = "username";
     private static final String PASSWORD_FIELD = "password";
@@ -170,6 +172,19 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
         } catch (MongoException ex) {
             throw new RuntimeException("Error updating password: " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public void changeHighscore(User user) {
+        try {
+            Bson filter = Filters.eq(USERNAME_FIELD, user.getName());
+            Bson update = Updates.set(HIGHSCORES_FIELD, user.getHighscores());
+
+            usersCollection.updateOne(filter, update);
+
+        } catch (MongoException ex) {
+            throw new RuntimeException("Error updating highscore: " + ex.getMessage(), ex);
         }
     }
 
