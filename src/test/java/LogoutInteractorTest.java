@@ -17,7 +17,7 @@ public class LogoutInteractorTest {
     private LogoutInteractor interactor;
     private UserFactory userFactory;
 
-    private final String TEST_FILE_PATH = "test_logout_users.csv";
+    private final String TEST_FILE_PATH = "users.csv";
     private final String LOGGED_IN_USER = "LoggedInUser";
 
     @BeforeEach
