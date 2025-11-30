@@ -19,7 +19,7 @@ public class SignupInteractorTest {
     private UserFactory userFactory;
     private SignupInteractor interactor;
 
-    private final String TEST_FILE_PATH = "test_signup_users.csv";
+    private final String TEST_FILE_PATH = "users.csv";
     private final String VALID_USERNAME = "NewUserToSignup";
     private final String VALID_PASSWORD = "TestPassword123";
 
