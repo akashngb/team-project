@@ -28,6 +28,23 @@ import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
 import view.*;
 import view.FontLoader;
+// Wordle imports
+import data_access.wordle.FileWordListDataAccess;
+import data_access.wordle.InMemoryGameSessionGateway;
+import interface_adapter.wordle.WordleController;
+import interface_adapter.wordle.WordlePresenter;
+import interface_adapter.wordle.WordleViewModel;
+import use_case.wordle.StartGameInteractor;
+import use_case.wordle.SubmitGuessInteractor;
+import wordle.WordleView;
+
+// Chess Puzzle Imports
+import entity.ChessPuzzle;
+import data_access.RapidAPIChessPuzzleDataAccess;
+import interface_adapter.chess_puzzle.*;
+import use_case.chess_puzzle.*;
+
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,6 +67,16 @@ public class AppBuilder {
     private LoggedInView loggedInView;
     private LoginView loginView;
 
+    //Wordle views
+    private WordleView wordleView;
+    private WordleViewModel wordleViewModel;
+    private WordleController wordleController;
+
+    //Chess views
+    private ChessPuzzleView chessPuzzleView;
+    private ChessPuzzleViewModel chessPuzzleViewModel;
+    private CheckMoveInteractor checkMoveInteractor;
+
     public AppBuilder() {
         FontLoader.loadFonts();
         cardPanel.setLayout(cardLayout);
@@ -64,14 +91,14 @@ public class AppBuilder {
 
     public AppBuilder addLoginView() {
         loginViewModel = new LoginViewModel();
-        loginView = new LoginView(loginViewModel);
+        loginView = new LoginView(loginViewModel, viewManagerModel);
         cardPanel.add(loginView, loginView.getViewName());
         return this;
     }
 
     public AppBuilder addLoggedInView() {
         loggedInViewModel = new LoggedInViewModel();
-        loggedInView = new LoggedInView(loggedInViewModel);
+        loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
         return this;
     }
@@ -98,18 +125,6 @@ public class AppBuilder {
         return this;
     }
 
-    public AppBuilder addChangePasswordUseCase() {
-        final ChangePasswordOutputBoundary changePasswordOutputBoundary = new ChangePasswordPresenter(viewManagerModel,
-                loggedInViewModel);
-
-        final ChangePasswordInputBoundary changePasswordInteractor =
-                new ChangePasswordInteractor(userDataAccessObject, changePasswordOutputBoundary, userFactory);
-
-        ChangePasswordController changePasswordController = new ChangePasswordController(changePasswordInteractor);
-        loggedInView.setChangePasswordController(changePasswordController);
-        return this;
-    }
-
     /**
      * Adds the Logout Use Case to the application.
      * @return this builder
@@ -126,6 +141,78 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addWordleFeature() {
+        // Data access
+        FileWordListDataAccess wordListDao = new FileWordListDataAccess();
+        InMemoryGameSessionGateway sessionGateway = new InMemoryGameSessionGateway();
+
+        // ViewModel
+        wordleViewModel = new WordleViewModel(java.util.Collections.emptyList(), 6, false, false, null, "");
+
+        // Presenter
+        WordlePresenter wordlePresenter = new WordlePresenter(vm -> {
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
+
+        // Interactors
+        StartGameInteractor startGameInteractor = new StartGameInteractor(wordListDao, sessionGateway, wordlePresenter);
+        SubmitGuessInteractor submitGuessInteractor = new SubmitGuessInteractor(wordListDao, sessionGateway, wordlePresenter);
+
+        // Controller
+        wordleController = new WordleController(startGameInteractor, submitGuessInteractor, sessionGateway);
+
+        wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
+            if (wordleView != null) wordleView.setViewModel(vm);
+        });
+        cardPanel.add(wordleView, "WORDLE");
+
+
+        return this;
+    }
+
+    public AppBuilder addChessPuzzleView() {
+        chessPuzzleViewModel = new ChessPuzzleViewModel();
+        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);  // Pass viewManagerModel
+        cardPanel.add(chessPuzzleView, chessPuzzleView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addChessPuzzleUseCase() {
+        // Setup data access
+        final ChessPuzzleDataAccessInterface dataAccess =
+                new RapidAPIChessPuzzleDataAccess();
+
+        // Setup Load Puzzles use case
+        final LoadPuzzlesOutputBoundary loadPresenter =
+                new LoadPuzzlesPresenter(chessPuzzleViewModel);
+        final LoadPuzzlesInputBoundary loadInteractor =
+                new LoadPuzzlesInteractor(dataAccess, loadPresenter);
+        final LoadPuzzlesController loadController =
+                new LoadPuzzlesController(loadInteractor);
+
+        // Setup Check Move use case
+        final CheckMoveOutputBoundary checkPresenter =
+                new CheckMovePresenter(chessPuzzleViewModel);
+        checkMoveInteractor = new CheckMoveInteractor(checkPresenter);
+        final CheckMoveController checkController =
+                new CheckMoveController(checkMoveInteractor);
+
+        // Connect controllers to view
+        chessPuzzleView.setLoadPuzzlesController(loadController);
+        chessPuzzleView.setCheckMoveController(checkController);
+
+        // Add property change listener to set current puzzle
+        chessPuzzleViewModel.addPropertyChangeListener(evt -> {
+            ChessPuzzleState state = chessPuzzleViewModel.getState();
+            ChessPuzzle currentPuzzle = state.getCurrentPuzzle();
+            if (currentPuzzle != null) {
+                checkMoveInteractor.setCurrentPuzzle(currentPuzzle);
+            }
+        });
+
+        return this;
+    }
+
     public JFrame build() {
         final JFrame application = new JFrame("User Login Example");
         application.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -135,7 +222,7 @@ public class AppBuilder {
 
         application.add(cardPanel);
 
-        viewManagerModel.setState(signupView.getViewName());
+        viewManagerModel.setState(loginView.getViewName());
         viewManagerModel.firePropertyChange();
 
         return application;
