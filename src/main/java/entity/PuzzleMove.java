@@ -26,10 +26,6 @@ public class PuzzleMove {
         return to;
     }
 
-    public String getPromotion() {
-        return promotion;
-    }
-
     public String toAlgebraic() {
         if (promotion != null) {
             return from + to + promotion;

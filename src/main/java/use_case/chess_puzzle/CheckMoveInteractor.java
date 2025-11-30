@@ -71,12 +71,4 @@ public class CheckMoveInteractor implements CheckMoveInputBoundary {
             presenter.presentIncorrectMove("Incorrect move. Try again!");
         }
     }
-
-    public void reset() {
-        this.currentMoveIndex = 0;
-    }
-
-    public int getCurrentMoveIndex() {
-        return currentMoveIndex;
-    }
 }

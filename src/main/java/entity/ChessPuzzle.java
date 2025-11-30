@@ -27,7 +27,10 @@ public class ChessPuzzle {
         return puzzleId;
     }
 
-    public void setNewFen(String newFen) {this.newFen = newFen;} // Setting the newFen to the most recent board state
+    public void setNewFen(String newFen) {
+        // Setting the newFen to the most recent board state
+        this.newFen = newFen;
+    }
 
     public String getFen() {
         return fen;
@@ -41,5 +44,7 @@ public class ChessPuzzle {
         return rating;
     }
 
-    public List<String> getThemes() {return themes;}
+    public List<String> getThemes() {
+        return themes;
+    }
 }

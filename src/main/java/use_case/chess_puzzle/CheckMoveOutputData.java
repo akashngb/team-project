@@ -20,14 +20,6 @@ public class CheckMoveOutputData {
         return feedback;
     }
 
-    public boolean isCorrect() {
-        return isCorrect;
-    }
-
-    public boolean isPuzzleSolved() {
-        return puzzleSolved;
-    }
-
     public String getComputerMove() {
         return computerMove;
     }

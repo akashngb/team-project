@@ -15,8 +15,4 @@ public class CheckMoveInputData {
     public String getMove() {
         return move;
     }
-
-    public int getMoveIndex() {
-        return moveIndex;
-    }
 }
