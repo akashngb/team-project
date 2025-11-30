@@ -28,6 +28,8 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
     private final JLabel scoreLabel;
     private final JLabel messageLabel;
     private final JButton newGameButton;
+    private final JButton backButton;
+
 
     private final JPanel previewPanel;
     private int selectedPieceIndex = -1;
@@ -48,19 +50,34 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
         scoreLabel.setFont(scoreLabel.getFont().deriveFont(Font.BOLD, 24f));
         messageLabel.setForeground(Color.YELLOW);
         messageLabel.setFont(messageLabel.getFont().deriveFont(Font.BOLD, 18f));
+
         newGameButton = new JButton("New Game");
         newGameButton.setFocusPainted(false);
         newGameButton.setBackground(new Color(255, 255, 255, 220));
         newGameButton.setForeground(Color.BLACK);
         newGameButton.setFont(newGameButton.getFont().deriveFont(Font.BOLD, 16f));
         newGameButton.addActionListener(e -> {
-            selectedPieceIndex = -1; // 选中状态也一起清空
+            selectedPieceIndex = -1;
             controller.newGame();
+        });
+
+        backButton = new JButton("Back");
+        backButton.setFocusPainted(false);
+        backButton.setBackground(new Color(255, 255, 255, 220));
+        backButton.setForeground(Color.BLACK);
+        backButton.setFont(backButton.getFont().deriveFont(Font.BOLD, 16f));
+        backButton.addActionListener(e -> {
+            java.awt.Window window = SwingUtilities.getWindowAncestor(BlockBlastView.this);
+            if (window != null) {
+                window.dispose();
+            }
         });
 
         topBar.add(scoreLabel);
         topBar.add(Box.createHorizontalStrut(30));
         topBar.add(newGameButton);
+        topBar.add(Box.createHorizontalStrut(30));
+        topBar.add(backButton);
         topBar.add(Box.createHorizontalStrut(30));
         topBar.add(messageLabel);
         add(topBar, BorderLayout.NORTH);
