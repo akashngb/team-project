@@ -172,10 +172,15 @@ public class AppBuilder {
 
     public AppBuilder addChessPuzzleView() {
         chessPuzzleViewModel = new ChessPuzzleViewModel();
-        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);  // Pass viewManagerModel
-        cardPanel.add(chessPuzzleView, chessPuzzleView.getViewName());
+        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);
+
+        JPanel wrapper = new JPanel(new GridBagLayout()); // centers contents
+        wrapper.add(chessPuzzleView);
+
+        cardPanel.add(wrapper, chessPuzzleView.getViewName());
         return this;
     }
+
 
     public AppBuilder addChessPuzzleUseCase() {
         // Setup data access
