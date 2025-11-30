@@ -40,7 +40,7 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
     private String currentUsername;
 
     /**
-          * Creates a MongoDB data acce     * Creates a MongoDB data access object using simple username/password authentication.
+     * Creates a MongoDB data access object using simple username/password authentication.
      *
      * @param databaseName the database name
      * @param collectionName the collection name for users
@@ -50,7 +50,6 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
                                        String collectionName,
                                        UserFactory userFactory) {
         this.userFactory = userFactory;
-        // Use simple username/password authentication (no certificates!)
         this.mongoClient = SimpleMongoDBConfig.createMongoClient();
         this.database = mongoClient.getDatabase(databaseName);
         this.usersCollection = database.getCollection(collectionName);
