@@ -1,123 +1,168 @@
 package data_access;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import entity.User;
-import entity.UserFactory;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
+import use_case.leaderboard.LeaderBoardDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * DAO for user data implemented using a File to persist the data.
+ * DAO for user data implemented using a JSON File to persist the data.
+ * Using JSON allows to use mappings of all kinds
+ * like the Map<String, Integer> highscores field.
  */
 public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
                                                  LoginUserDataAccessInterface,
                                                  ChangePasswordUserDataAccessInterface,
-                                                 LogoutUserDataAccessInterface {
+                                                 LogoutUserDataAccessInterface,
+                                                 LeaderBoardDataAccessInterface {
 
-    private static final String HEADER = "username,password";
-
-    private final File csvFile;
-    private final Map<String, Integer> headers = new LinkedHashMap<>();
+    private final File jsonFile;
     private final Map<String, User> accounts = new HashMap<>();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create(); // Pretty printing for readable JSON
 
     private String currentUsername;
 
     /**
-     * Construct this DAO for saving to and reading from a local file.
-     * @param csvPath the path of the file to save to
-     * @param userFactory factory for creating user objects
-     * @throws RuntimeException if there is an IOException when accessing the file
+     * Construct this DAO for saving to and reading from a local JSON file.
+     * If the file exists, it will load existing user data. Otherwise, it creates a new empty file.
+     *
+     * @param jsonPath the path of the JSON file to save to
+     * @throws RuntimeException if there is an exception when accessing the file
      */
-    public FileUserDataAccessObject(String csvPath, UserFactory userFactory) {
+    public FileUserDataAccessObject(String jsonPath) {
+        this.jsonFile = new File(jsonPath);
 
-        csvFile = new File(csvPath);
-        headers.put("username", 0);
-        headers.put("password", 1);
-
-        if (csvFile.length() == 0) {
-            save();
-        }
-        else {
-
-            try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
-                final String header = reader.readLine();
-
-                if (!header.equals(HEADER)) {
-                    throw new RuntimeException(String.format("header should be%n: %s%n but was:%n%s", HEADER, header));
-                }
-
-                String row;
-                while ((row = reader.readLine()) != null) {
-                    final String[] col = row.split(",");
-                    final String username = String.valueOf(col[headers.get("username")]);
-                    final String password = String.valueOf(col[headers.get("password")]);
-                    final User user = userFactory.create(username, password);
-                    accounts.put(username, user);
-                }
+        try {
+            // If file exists and has content, load the existing data
+            if (jsonFile.exists() && jsonFile.length() > 0) {
+                load();
+            } else {
+                // Initialize with empty JSON object
+                save();
             }
-            catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
+        } catch (RuntimeException ex) {
+            // Re-throw with more context about what failed
+            throw new RuntimeException("Failed to initialize FileUserDataAccessObject with file: " + jsonPath, ex);
         }
     }
 
-    private void save() {
-        final BufferedWriter writer;
-        try {
-            writer = new BufferedWriter(new FileWriter(csvFile));
-            writer.write(String.join(",", headers.keySet()));
-            writer.newLine();
+    /**
+     * Load user data from the JSON file.
+     * Deserializes the JSON directly into a Map of username to User objects.
+     *
+     * @throws RuntimeException if there is an IOException when reading the file
+     */
+    private void load() {
+        try (Reader reader = new FileReader(jsonFile)) {
+            // Define the type for Gson to deserialize into
+            Type type = new TypeToken<Map<String, User>>() {
+            }.getType();
+            Map<String, User> loadedAccounts = gson.fromJson(reader, type);
 
-            for (User user : accounts.values()) {
-                final String line = String.format("%s,%s",
-                        user.getName(), user.getPassword());
-                writer.write(line);
-                writer.newLine();
+            // Add all loaded users to the accounts map
+            if (loadedAccounts != null) {
+                accounts.putAll(loadedAccounts);
             }
-
-            writer.close();
-
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
     }
 
+    /**
+     * Save all user accounts to the JSON file.
+     * Serializes the User objects directly to JSON.
+     *
+     * @throws RuntimeException if there is an IOException when writing to the file
+     */
+    private void save() {
+        try (Writer writer = new FileWriter(jsonFile)) {
+            // Write the accounts map directly to JSON with pretty printing
+            gson.toJson(accounts, writer);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    /**
+     * Save a user to the accounts map and persist to file.
+     *
+     * @param user the user to save
+     */
     @Override
     public void save(User user) {
         accounts.put(user.getName(), user);
         this.save();
     }
 
+    /**
+     * Retrieve a user by username.
+     *
+     * @param username the username to look up
+     * @return the User object, or null if not found
+     */
     @Override
     public User get(String username) {
         return accounts.get(username);
     }
 
+    /**
+     * Set the current logged-in username.
+     *
+     * @param name the username of the currently logged-in user
+     */
     @Override
     public void setCurrentUsername(String name) {
         currentUsername = name;
     }
 
+    /**
+     * Get the current logged-in username.
+     *
+     * @return the username of the currently logged-in user
+     */
     @Override
     public String getCurrentUsername() {
         return currentUsername;
     }
 
+    /**
+     * Check if a user exists by username.
+     *
+     * @param identifier the username to check
+     * @return true if the user exists, false otherwise
+     */
     @Override
     public boolean existsByName(String identifier) {
         return accounts.containsKey(identifier);
     }
 
+    /**
+     * Update a user's password and persist the change.
+     *
+     * @param user the user with the updated password
+     */
     @Override
     public void changePassword(User user) {
-        // Replace the User object in the map
+        accounts.put(user.getName(), user);
+        save();
+    }
+
+    /**
+     * Update a user's highscores and persist the change.
+     *
+     * @param user the user with the updated highscores
+     */
+    public void changeHighscore(User user) {
         accounts.put(user.getName(), user);
         save();
     }
