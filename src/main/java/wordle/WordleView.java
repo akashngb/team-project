@@ -25,7 +25,7 @@ public class WordleView extends JPanel {
     private final JLabel statusLabel;
     private final JLabel scoreLabel;
     private int score = 0; // number of games won
-    private final JLabel scoreLabel;
+//    private final JLabel scoreLabel;
     private final JButton backButton;
     private ViewManagerModel viewManagerModel = null;
 
