@@ -18,7 +18,7 @@ public class LoginInteractorTest {
     private LoginInteractor interactor;
     private UserFactory userFactory;
 
-    private final String TEST_FILE_PATH = "test_login_users.csv";
+    private final String TEST_FILE_PATH = "users.csv";
     private final String VALID_USERNAME = "ActualDAOUser";
     private final String VALID_PASSWORD = "TestPassword999";
 
