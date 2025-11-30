@@ -49,8 +49,8 @@ public class AppBuilder {
     final ViewManagerModel viewManagerModel = new ViewManagerModel();
     ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // File-based data access implementation using local CSV storage
-    final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.csv", userFactory);
+    // File-based data access implementation using local JSON storage
+    final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.json");
 
 
     private SignupView signupView;

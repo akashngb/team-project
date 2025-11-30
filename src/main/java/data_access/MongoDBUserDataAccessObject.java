@@ -17,6 +17,8 @@ import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -30,6 +32,7 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
     private static final String USERNAME_FIELD = "username";
     private static final String PASSWORD_FIELD = "password";
+    private static final String HIGHSCORES_FIELD = "highscores";
 
     private final MongoClient mongoClient;
     private final MongoDatabase database;
@@ -75,13 +78,14 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
             // Get the hashed password (stored in DB)
             String hashedPassword = userDoc.getString(PASSWORD_FIELD);
+            // Get the HashMap highscores
+            Map highscores = userDoc.get(HIGHSCORES_FIELD, Map.class);
 
             // IMPORTANT: We return the hashed password here.
             // The LoginInteractor will need to be updated to use verifyPassword()
             // instead of direct password comparison.
-            // For now, we return a User with hashed password - you'll need to
-            // modify LoginInteractor to handle this properly.
-            return userFactory.create(username, hashedPassword);
+            // For now, we return a User with hashed password
+            return userFactory.create(username, hashedPassword, highscores);
 
         } catch (MongoException ex) {
             throw new RuntimeException("Error retrieving user from MongoDB: " + ex.getMessage(), ex);
@@ -143,7 +147,8 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
             Document userDoc = new Document()
                     .append(USERNAME_FIELD, user.getName())
-                    .append(PASSWORD_FIELD, hashedPassword);
+                    .append(PASSWORD_FIELD, hashedPassword)
+                    .append(HIGHSCORES_FIELD, user.getHighscores());
 
             usersCollection.insertOne(userDoc);
 
