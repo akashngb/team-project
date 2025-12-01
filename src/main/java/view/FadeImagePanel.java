@@ -18,7 +18,7 @@ class FadeImagePanel extends ImagePanel implements ActionListener {
 
     public FadeImagePanel(String initialPath) {
         super(initialPath); // Call the original ImagePanel constructor
-        this.currentImage = super.getImage(); // Get initial image set by super
+        this.currentImage = super.getImage();
         this.timer = new Timer(DELAY, this);
         this.timer.setCoalesce(true);
     }
