@@ -12,6 +12,7 @@ public class MainMongoDB {
                     .addLoginView()
                     .addSignupView()
                     .addLoggedInView()
+                    .addChessPuzzleView()
                     .addLeaderBoardView()
                     .addSignupUseCase()
                     .addLoginUseCase()
@@ -19,6 +20,7 @@ public class MainMongoDB {
                     .addLeaderBoardUseCase()
                     .wireLeaderBoardToLoggedInView()
                     .addWordleFeature()
+                    .addChessPuzzleUseCase()
                     .build();
 
             application.pack();
