@@ -14,7 +14,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
+import javax.swing.JRootPane;
+import java.awt.event.HierarchyEvent;
+import javax.swing.SwingUtilities;
 
 /**
  * The View for when the user is logging into the program.
@@ -118,8 +120,6 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         passwordErrorField.setOpaque(false);
         buttons.setOpaque(false);
 
-        // --- 3. Layout Structure (Consolidated) ---
-
         // Panel for vertical stacking and left alignment
         final JPanel formContentPanel = new JPanel();
         formContentPanel.setLayout(new BoxLayout(formContentPanel, BoxLayout.Y_AXIS));
@@ -165,7 +165,6 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         this.setLayout(new BorderLayout()); // Set main panel layout
         this.add(background, BorderLayout.CENTER); // Add background to fill the main panel
 
-        // --- 5. Listeners and Controllers ---
 
         logIn.addActionListener(
                 evt -> {
@@ -221,7 +220,7 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
 
     /**
      * React to a button click that results in evt.
-     * 
+     *
      * @param evt the ActionEvent to react to
      */
     public void actionPerformed(ActionEvent evt) {
