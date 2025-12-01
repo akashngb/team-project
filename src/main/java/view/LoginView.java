@@ -88,7 +88,7 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
                 3,
                 20);
         // Configure buttons
-        logIn = new JButton("Login"); // Adjusted text to match image
+        logIn = new JButton("Login");
         logIn.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 40f));
         logIn.setForeground(Color.BLACK);
         logIn.setBackground(customGray);
