@@ -86,11 +86,33 @@ public class SubmitGuessInteractor implements SubmitGuessInputBoundary {
                     "Guess accepted"
             );
 
+            if (game.isFinished()) {
+                if (game.isWon()) {
+                    int guessesUsed = game.getGuesses().size();
+                    int points = Math.max(0, 6 - guessesUsed);
+                    sessionGateway.addScore(userId, points);
+                } else {
+                    sessionGateway.addScore(userId, 0);
+                }
+            }
+
+            if (game.isFinished()) {
+                if (game.isWon()) {
+                    int guessesUsed = game.getGuesses().size();
+                    int points = Math.max(0, 6 - guessesUsed);
+                    sessionGateway.addScore(userId, points);
+                } else {
+                    sessionGateway.addScore(userId, 0);
+                }
+            }
+
             presenter.presentGuessResult(out);
 
             if (game.isFinished()) {
                 sessionGateway.remove(userId);
             }
+
+
 
 
         } catch (Exception e) {
