@@ -120,7 +120,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
         // Horizontal Layout for Game Selection Panels
         final JPanel gameSelectionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // Center with more
-                                                                                                // horizontal gap
+        // horizontal gap
         gameSelectionPanel.add(blockBlastButton); // Now these are the clickable game panels
         gameSelectionPanel.add(wordleButton);
         gameSelectionPanel.add(chessButton);
@@ -210,7 +210,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
     /**
      * React to a button click that results in evt.
-     * 
+     *
      * @param evt the ActionEvent to react to
      */
     public void actionPerformed(ActionEvent evt) {
@@ -224,7 +224,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
             viewManagerModel.setState("WORDLE");
             viewManagerModel.firePropertyChange();
         } else if (evt.getSource().equals(chessButton)) {
-            viewManagerModel.setState("CHESS-PUZZLE");
+            viewManagerModel.setState("chess puzzle");
             viewManagerModel.firePropertyChange();
         }
     }
@@ -252,6 +252,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     public void setLogoutController(LogoutController logoutController) {
         this.logoutController = logoutController;
     }
+}
 
     public void setLeaderBoardController(LeaderBoardController leaderBoardController) {
         this.leaderBoardController = leaderBoardController;

@@ -9,6 +9,7 @@ public class Main {
                 .addLoginView()
                 .addSignupView()
                 .addLoggedInView()
+                .addChessPuzzleView()
                 .addLeaderBoardView()
                 .addSignupUseCase()
                 .addLoginUseCase()
@@ -16,6 +17,7 @@ public class Main {
                 .addLeaderBoardUseCase()
                 .wireLeaderBoardToLoggedInView()
                 .addWordleFeature()
+                .addChessPuzzleUseCase()
                 .build();
 
         application.pack();
