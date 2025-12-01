@@ -1,5 +1,6 @@
 package view.blockblast;
 
+import entity.Games;
 import entity.blockblast.Piece;
 import entity.blockblast.PieceColor;
 import interface_adapter.ViewManagerModel;
@@ -335,7 +336,7 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
     private void submitScoreToLeaderboard(int finalScore) {
         if (leaderBoardController != null && userId != null) {
             // Submit to leaderboard - it will check if it's a new highscore
-            leaderBoardController.execute(userId, finalScore, "BLOCKBLAST");
+            leaderBoardController.execute(userId, finalScore, String.valueOf(Games.BLOCKBLAST));
         }
     }
 

@@ -1,5 +1,6 @@
 package wordle;
 
+import entity.Games;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.leaderboard.LeaderBoardController;
 import interface_adapter.wordle.WordleController;
@@ -257,7 +258,7 @@ public class WordleView extends JPanel {
     private void submitScoreToLeaderboard(int finalScore) {
         if (leaderBoardController != null && userId != null) {
             // Submit to leaderboard - it will check if it's a new highscore
-            leaderBoardController.execute(userId, finalScore, "Wordle");
+            leaderBoardController.execute(userId, finalScore, String.valueOf(Games.WORDLE));
         }
     }
 
