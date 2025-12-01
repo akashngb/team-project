@@ -16,6 +16,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
 /**
  * Passive Swing view. UI events are forwarded to controller.
  * The presenter must call setViewModel(vm) via the provided viewUpdater to update the UI.
@@ -213,12 +216,17 @@ public class WordleView extends JPanel {
         add(bottom);
         add(Box.createVerticalStrut(20)); // optional bottom spacing
 
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                controller.startNewGame(userId);
+            }
+        });
+
 
         // expose vm consumer so presenter can update UI
         vmConsumer.accept(null); // no-op initial
         // immediately start a new game when the user arrives here
-        controller.startNewGame(userId);
-        SwingUtilities.invokeLater(() -> typingField.requestFocusInWindow());
 
     }
 
@@ -231,9 +239,9 @@ public class WordleView extends JPanel {
             int updatedScore = controller.getScore(userId);
             scoreLabel.setText("Score: " + updatedScore);
             if (vm.won) {
-                score++;
+                //score++;
                 statusLabel.setText("You win! TAB + ENTER to play again");
-                scoreLabel.setText("Score: " + score);
+                scoreLabel.setText("Score: " + updatedScore);
                 // Submit score to leaderboard
                 submitScoreToLeaderboard(updatedScore);
             } else {
