@@ -59,7 +59,7 @@ public class WordleView extends JPanel {
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logo.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-// Add logo to the WordleView panel (not inside boardContainer)
+        // Add logo to the WordleView panel (not inside boardContainer)
         add(Box.createVerticalStrut(20)); // adds 50px of space above the logo
         add(logo);
 
@@ -191,6 +191,7 @@ public class WordleView extends JPanel {
         leaderboardButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         leaderboardButton.addActionListener(e -> {
             // Switch to LeaderBoardView
+            submitScoreToLeaderboard(0); // Switch to leaderboard view and refresh its data
             viewManagerModel.setState("leaderboard");
             viewManagerModel.firePropertyChange();
         });
