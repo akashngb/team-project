@@ -165,6 +165,14 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         this.setLayout(new BorderLayout()); // Set main panel layout
         this.add(background, BorderLayout.CENTER); // Add background to fill the main panel
 
+        this.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) != 0) {
+                JRootPane rootPane = SwingUtilities.getRootPane(LoginView.this);
+                if (rootPane != null) {
+                    rootPane.setDefaultButton(logIn);
+                }
+            }
+        });
 
         logIn.addActionListener(
                 evt -> {
