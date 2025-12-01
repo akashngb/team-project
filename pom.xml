@@ -68,6 +68,7 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20230227</version>
+        </dependency>
           
         <!-- Gson for JSON serialization/deserialization -->
         <dependency>
