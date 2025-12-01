@@ -1,9 +1,11 @@
 package app.blockblast;
 
 import entity.blockblast.*;
+import interface_adapter.ViewManagerModel;
 import interface_adapter.blockblast.BlockBlastController;
 import interface_adapter.blockblast.BlockBlastPresenter;
 import interface_adapter.blockblast.BlockBlastViewModel;
+import interface_adapter.leaderboard.LeaderBoardController;
 import use_case.blockblast.PlacePieceInputBoundary;
 import use_case.blockblast.PlacePieceInteractor;
 import view.ImagePanel;
@@ -15,6 +17,12 @@ import java.awt.*;
 public class BlockBlastAppBuilder {
 
     public static JFrame buildFrame() {
+        return buildFrame(null, null, null);
+    }
+
+    public static JFrame buildFrame(ViewManagerModel viewManagerModel,
+                                   LeaderBoardController leaderBoardController,
+                                   String userId) {
         Board board = new Board(8, 8);
         PieceGenerator generator = new PieceGenerator();
 
@@ -32,7 +40,17 @@ public class BlockBlastAppBuilder {
         BlockBlastController controller =
                 new BlockBlastController(interactor);
 
-        BlockBlastView view = new BlockBlastView(viewModel, controller);
+        BlockBlastView view = new BlockBlastView(viewModel, controller, viewManagerModel);
+
+        // Wire up leaderboard if available
+        if (leaderBoardController != null) {
+            view.setLeaderBoardController(leaderBoardController);
+        }
+
+        // Set user ID if available
+        if (userId != null && !userId.isEmpty()) {
+            view.setUserId(userId);
+        }
 
         ImagePanel background = new ImagePanel("/images/blockblast_bg.png");
         background.setLayout(new BorderLayout());

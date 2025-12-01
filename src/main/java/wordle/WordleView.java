@@ -1,6 +1,7 @@
 package wordle;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.leaderboard.LeaderBoardController;
 import interface_adapter.wordle.WordleController;
 import interface_adapter.wordle.WordleViewModel;
 
@@ -20,12 +21,13 @@ import java.util.function.Consumer;
  */
 public class WordleView extends JPanel {
     private final WordleController controller;
+    private LeaderBoardController leaderBoardController;
     private final BoardPanel boardPanel;
     private final JTextField typingField;
     private final JLabel statusLabel;
     private final JLabel scoreLabel;
     private int score = 0; // number of games won
-    private final JLabel scoreLabel;
+//    private final JLabel scoreLabel;
     private final JButton backButton;
     private ViewManagerModel viewManagerModel = null;
 
@@ -175,6 +177,22 @@ public class WordleView extends JPanel {
 
         controls.add(backButton);
 
+        // add leaderboard button
+        JButton leaderboardButton = new JButton("Leaderboard");
+        leaderboardButton.setFont(FontLoader.jersey10.deriveFont(18f));
+        leaderboardButton.setBackground(new Color(255, 215, 0)); // Gold color
+        leaderboardButton.setForeground(Color.BLACK);
+        leaderboardButton.setOpaque(true);
+        leaderboardButton.setBorderPainted(false);
+        leaderboardButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        leaderboardButton.addActionListener(e -> {
+            // Switch to LeaderBoardView
+            viewManagerModel.setState("leaderboard");
+            viewManagerModel.firePropertyChange();
+        });
+
+        controls.add(leaderboardButton);
+
 
         bottom.add(typingField, BorderLayout.NORTH);
 
@@ -215,6 +233,8 @@ public class WordleView extends JPanel {
                 score++;
                 statusLabel.setText("You win! TAB + ENTER to play again");
                 scoreLabel.setText("Score: " + score);
+                // Submit score to leaderboard
+                submitScoreToLeaderboard(updatedScore);
             } else {
                 statusLabel.setText("You lose! The answer was "
                         + vm.answerIfFinished.toUpperCase()
@@ -223,6 +243,8 @@ public class WordleView extends JPanel {
                 if (score < 0) score = 0;
                 scoreLabel.setText("Score: " + score);
                 statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". To play again, TAB + ENTER");
+                // Submit score to leaderboard even on loss (to track total games)
+                submitScoreToLeaderboard(updatedScore);
             }
         } else {
             // Normal message
@@ -230,6 +252,21 @@ public class WordleView extends JPanel {
         }
 
         repaint();
+    }
+
+    private void submitScoreToLeaderboard(int finalScore) {
+        if (leaderBoardController != null && userId != null) {
+            // Submit to leaderboard - it will check if it's a new highscore
+            leaderBoardController.execute(userId, finalScore, "Wordle");
+        }
+    }
+
+    public void setLeaderBoardController(LeaderBoardController leaderBoardController) {
+        this.leaderBoardController = leaderBoardController;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     private void doSubmit() {
