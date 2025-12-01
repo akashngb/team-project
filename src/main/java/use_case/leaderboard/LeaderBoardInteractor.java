@@ -30,12 +30,12 @@ public class LeaderBoardInteractor implements LeaderBoardInputBoundary {
                 leaderBoardDataAccessObject.changeHighscore(username, gameName, score);
                 List<User> topUsers = leaderBoardDataAccessObject.getTopUsersForGame(gameName, 10);
                 leaderBoardPresenter.prepareSuccessView(
-                        new LeaderBoardOutputData(topUsers, true, true)
+                        new LeaderBoardOutputData(topUsers, true, true, gameName)
                 );
             } else {
                 List<User> topUsers = leaderBoardDataAccessObject.getTopUsersForGame(gameName, 10);
                 leaderBoardPresenter.prepareSuccessView(
-                        new LeaderBoardOutputData(topUsers, false, true)
+                        new LeaderBoardOutputData(topUsers, false, true, gameName)
                 );
             }
         }

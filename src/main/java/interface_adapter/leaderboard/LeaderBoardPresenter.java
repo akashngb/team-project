@@ -17,7 +17,12 @@ public class LeaderBoardPresenter implements LeaderBoardOutputBoundary {
 
     @Override
     public void prepareSuccessView(LeaderBoardOutputData response) {
-
+        final LeaderBoardState leaderBoardState = leaderBoardViewModel.getState();
+        leaderBoardState.setTopUsers(response.getTopUsers());
+        leaderBoardState.setNewHighscore(response.isNewHighscore());
+        leaderBoardState.setGameName(response.getGameName());
+        leaderBoardState.setErrorMessage("");
+        leaderBoardViewModel.firePropertyChange();
     }
 
     @Override
