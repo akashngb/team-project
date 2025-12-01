@@ -34,7 +34,6 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
     private final JLabel scoreLabel;
     private final JLabel messageLabel;
     private final JButton newGameButton;
-    private final JButton backButton;
 
 
     private final JPanel previewPanel;
