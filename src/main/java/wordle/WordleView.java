@@ -238,27 +238,16 @@ public class WordleView extends JPanel {
         if (vm.finished) {
             int updatedScore = controller.getScore(userId);
             scoreLabel.setText("Score: " + updatedScore);
+
             if (vm.won) {
-                //score++;
                 statusLabel.setText("You win! TAB + ENTER to play again");
-                scoreLabel.setText("Score: " + updatedScore);
-                // Submit score to leaderboard
                 submitScoreToLeaderboard(updatedScore);
             } else {
-                statusLabel.setText("You lose! The answer was "
-                        + vm.answerIfFinished.toUpperCase()
-                        + ". TAB + ENTER for a new game");
-                score--;
-                if (score < 0) score = 0;
-                scoreLabel.setText("Score: " + score);
-                statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". To play again, TAB + ENTER");
-                // Submit score to leaderboard even on loss (to track total games)
+                statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". TAB + ENTER for a new game");
                 submitScoreToLeaderboard(updatedScore);
             }
-        } else {
-            // Normal message
-            statusLabel.setText(vm.message != null ? vm.message : " ");
         }
+
 
         repaint();
     }
@@ -276,6 +265,7 @@ public class WordleView extends JPanel {
 
     public void setUserId(String userId) {
         this.userId = userId;
+        scoreLabel.setText("Score: 0");
     }
 
     private void doSubmit() {
