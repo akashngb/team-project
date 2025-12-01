@@ -26,6 +26,12 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
+import use_case.leaderboard.LeaderBoardInputBoundary;
+import use_case.leaderboard.LeaderBoardInteractor;
+import use_case.leaderboard.LeaderBoardOutputBoundary;
+import interface_adapter.leaderboard.LeaderBoardController;
+import interface_adapter.leaderboard.LeaderBoardPresenter;
+import interface_adapter.leaderboard.LeaderBoardViewModel;
 import view.*;
 import view.FontLoader;
 // Wordle imports
@@ -60,6 +66,11 @@ public class AppBuilder {
     private LoggedInView loggedInView;
     private LoginView loginView;
 
+    //Leaderboard views
+    private LeaderBoardView leaderBoardView;
+    private LeaderBoardViewModel leaderBoardViewModel;
+    private LeaderBoardController leaderBoardController;
+
     //Wordle views
     private WordleView wordleView;
     private WordleViewModel wordleViewModel;
@@ -89,6 +100,17 @@ public class AppBuilder {
         loggedInViewModel = new LoggedInViewModel();
         loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
+        return this;
+    }
+
+    /**
+     * Wire up the leaderboard controller to LoggedInView so it can pass it to games
+     * Call this AFTER addLeaderBoardUseCase()
+     */
+    public AppBuilder wireLeaderBoardToLoggedInView() {
+        if (loggedInView != null && leaderBoardController != null) {
+            loggedInView.setLeaderBoardController(leaderBoardController);
+        }
         return this;
     }
 
@@ -130,6 +152,24 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addLeaderBoardView() {
+        leaderBoardViewModel = new LeaderBoardViewModel();
+        leaderBoardView = new LeaderBoardView(leaderBoardViewModel, viewManagerModel);
+        cardPanel.add(leaderBoardView, leaderBoardView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addLeaderBoardUseCase() {
+        final LeaderBoardOutputBoundary leaderBoardOutputBoundary = new LeaderBoardPresenter(
+                viewManagerModel, leaderBoardViewModel);
+        final LeaderBoardInputBoundary leaderBoardInteractor = new LeaderBoardInteractor(
+                userDataAccessObject, leaderBoardOutputBoundary);
+
+        leaderBoardController = new LeaderBoardController(leaderBoardInteractor);
+        leaderBoardView.setLeaderBoardController(leaderBoardController);
+        return this;
+    }
+
     public AppBuilder addWordleFeature() {
         // Data access
         FileWordListDataAccess wordListDao = new FileWordListDataAccess();
@@ -153,6 +193,22 @@ public class AppBuilder {
         wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
             if (wordleView != null) wordleView.setViewModel(vm);
         });
+
+        // Wire up leaderboard controller if available
+        if (leaderBoardController != null) {
+            wordleView.setLeaderBoardController(leaderBoardController);
+        }
+
+        // Setup username tracking from logged in state
+        loggedInViewModel.addPropertyChangeListener(evt -> {
+            if ("state".equals(evt.getPropertyName())) {
+                String currentUser = loggedInViewModel.getState().getUsername();
+                if (currentUser != null && !currentUser.isEmpty()) {
+                    wordleView.setUserId(currentUser);
+                }
+            }
+        });
+
         cardPanel.add(wordleView, "WORDLE");
 
 

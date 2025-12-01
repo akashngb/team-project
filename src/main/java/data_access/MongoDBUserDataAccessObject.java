@@ -253,9 +253,9 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
             for (Document userDoc : topUserDocs) {
                 String username = userDoc.getString(USERNAME_FIELD);
-                String wipedPassword = "";                           // Do not expose passwords
+                String placeholderPassword = "REDACTED";  // Use placeholder instead of empty string
 
-                topUsers.add(userFactory.create(username, wipedPassword, getHighscoresFromDB(userDoc)));
+                topUsers.add(userFactory.create(username, placeholderPassword, getHighscoresFromDB(userDoc)));
             }
 
             return topUsers;

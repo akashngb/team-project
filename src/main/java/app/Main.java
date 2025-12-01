@@ -9,9 +9,12 @@ public class Main {
                 .addLoginView()
                 .addSignupView()
                 .addLoggedInView()
+                .addLeaderBoardView()
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addLogoutUseCase()
+                .addLeaderBoardUseCase()
+                .wireLeaderBoardToLoggedInView()
                 .addWordleFeature()
                 .build();
 
