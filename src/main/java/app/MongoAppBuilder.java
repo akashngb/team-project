@@ -27,6 +27,12 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
+import use_case.leaderboard.LeaderBoardInputBoundary;
+import use_case.leaderboard.LeaderBoardInteractor;
+import use_case.leaderboard.LeaderBoardOutputBoundary;
+import interface_adapter.leaderboard.LeaderBoardController;
+import interface_adapter.leaderboard.LeaderBoardPresenter;
+import interface_adapter.leaderboard.LeaderBoardViewModel;
 import view.*;
 // Wordle imports
 import data_access.wordle.FileWordListDataAccess;
@@ -55,9 +61,8 @@ public class MongoAppBuilder {
 
     // MongoDB Data Access Object
     final MongoDBUserDataAccessObject userDataAccessObject = new MongoDBUserDataAccessObject(
-            SimpleMongoDBConfig.CONNECTION_STRING,
             SimpleMongoDBConfig.DATABASE_NAME,
-            SimpleMongoDBConfig.USERS_COLLECTION,
+            SimpleMongoDBConfig.COLLECTION_NAME,
             userFactory
     );
 
@@ -67,6 +72,11 @@ public class MongoAppBuilder {
     private LoggedInViewModel loggedInViewModel;
     private LoggedInView loggedInView;
     private LoginView loginView;
+
+    // Leaderboard fields
+    private LeaderBoardView leaderBoardView;
+    private LeaderBoardViewModel leaderBoardViewModel;
+    private LeaderBoardController leaderBoardController;
 
     // Wordle fields
     private WordleView wordleView;
@@ -97,6 +107,17 @@ public class MongoAppBuilder {
         loggedInViewModel = new LoggedInViewModel();
         loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
+        return this;
+    }
+
+    /**
+     * Wire up the leaderboard controller to LoggedInView so it can pass it to games
+     * Call this AFTER addLeaderBoardUseCase()
+     */
+    public MongoAppBuilder wireLeaderBoardToLoggedInView() {
+        if (loggedInView != null && leaderBoardController != null) {
+            loggedInView.setLeaderBoardController(leaderBoardController);
+        }
         return this;
     }
 
@@ -136,6 +157,24 @@ public class MongoAppBuilder {
         return this;
     }
 
+    public MongoAppBuilder addLeaderBoardView() {
+        leaderBoardViewModel = new LeaderBoardViewModel();
+        leaderBoardView = new LeaderBoardView(leaderBoardViewModel, viewManagerModel);
+        cardPanel.add(leaderBoardView, leaderBoardView.getViewName());
+        return this;
+    }
+
+    public MongoAppBuilder addLeaderBoardUseCase() {
+        final LeaderBoardOutputBoundary leaderBoardOutputBoundary = new LeaderBoardPresenter(
+                viewManagerModel, leaderBoardViewModel);
+        final LeaderBoardInputBoundary leaderBoardInteractor = new LeaderBoardInteractor(
+                userDataAccessObject, leaderBoardOutputBoundary);
+
+        leaderBoardController = new LeaderBoardController(leaderBoardInteractor);
+        leaderBoardView.setLeaderBoardController(leaderBoardController);
+        return this;
+    }
+
     public MongoAppBuilder addWordleFeature() {
         // Data access
         FileWordListDataAccess wordListDao = new FileWordListDataAccess();
@@ -161,6 +200,22 @@ public class MongoAppBuilder {
         wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
             if (wordleView != null) wordleView.setViewModel(vm);
         });
+
+        // Wire up leaderboard controller if available
+        if (leaderBoardController != null) {
+            wordleView.setLeaderBoardController(leaderBoardController);
+        }
+
+        // Setup username tracking from logged in state
+        loggedInViewModel.addPropertyChangeListener(evt -> {
+            if ("state".equals(evt.getPropertyName())) {
+                String currentUser = loggedInViewModel.getState().getUsername();
+                if (currentUser != null && !currentUser.isEmpty()) {
+                    wordleView.setUserId(currentUser);
+                }
+            }
+        });
+
         cardPanel.add(wordleView, "WORDLE");
 
 

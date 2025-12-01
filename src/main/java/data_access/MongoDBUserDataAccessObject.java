@@ -2,7 +2,6 @@ package data_access;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -13,11 +12,12 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.mindrot.jbcrypt.BCrypt;
 import use_case.change_password.ChangePasswordUserDataAccessInterface;
+import use_case.leaderboard.LeaderBoardDataAccessInterface;
 import use_case.login.LoginUserDataAccessInterface;
 import use_case.logout.LogoutUserDataAccessInterface;
 import use_case.signup.SignupUserDataAccessInterface;
 
-import java.util.UUID;
+import java.util.*;
 
 /**
  * MongoDB implementation of the user data access object.
@@ -26,10 +26,12 @@ import java.util.UUID;
 public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterface,
                                                      LoginUserDataAccessInterface,
                                                      ChangePasswordUserDataAccessInterface,
-                                                     LogoutUserDataAccessInterface {
+                                                     LogoutUserDataAccessInterface,
+                                                     LeaderBoardDataAccessInterface {
 
     private static final String USERNAME_FIELD = "username";
     private static final String PASSWORD_FIELD = "password";
+    private static final String HIGHSCORES_FIELD = "highscores";
 
     private final MongoClient mongoClient;
     private final MongoDatabase database;
@@ -38,19 +40,16 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
     private String currentUsername;
 
     /**
-     * Creates a MongoDB data access object using X.509 certificate authentication.
+     * Creates a MongoDB data access object using simple username/password authentication.
      *
-     * @param connectionString MongoDB connection string from MongoDBConfig (ignored, kept for interface compatibility)
      * @param databaseName the database name
      * @param collectionName the collection name for users
      * @param userFactory factory for creating user objects
      */
-    public MongoDBUserDataAccessObject(String connectionString,
-                                       String databaseName,
+    public MongoDBUserDataAccessObject(String databaseName,
                                        String collectionName,
                                        UserFactory userFactory) {
         this.userFactory = userFactory;
-        // Use simple username/password authentication (no certificates!)
         this.mongoClient = SimpleMongoDBConfig.createMongoClient();
         this.database = mongoClient.getDatabase(databaseName);
         this.usersCollection = database.getCollection(collectionName);
@@ -70,7 +69,7 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
             Document userDoc = usersCollection.find(filter).first();
 
             if (userDoc == null) {
-                throw new RuntimeException("User not found: " + username);
+                                throw new RuntimeException("User not found");
             }
 
             // Get the hashed password (stored in DB)
@@ -79,9 +78,8 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
             // IMPORTANT: We return the hashed password here.
             // The LoginInteractor will need to be updated to use verifyPassword()
             // instead of direct password comparison.
-            // For now, we return a User with hashed password - you'll need to
-            // modify LoginInteractor to handle this properly.
-            return userFactory.create(username, hashedPassword);
+            // For now, we return a User with hashed password
+            return userFactory.create(username, hashedPassword, getHighscoresFromDB(userDoc));
 
         } catch (MongoException ex) {
             throw new RuntimeException("Error retrieving user from MongoDB: " + ex.getMessage(), ex);
@@ -105,27 +103,7 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
             long count = usersCollection.countDocuments(filter);
             return count > 0;
         } catch (com.mongodb.MongoSecurityException ex) {
-            String errorMsg = "\n" +
-                "═══════════════════════════════════════════════════════════════\n" +
-                "  ❌ MONGODB AUTHENTICATION FAILED!\n" +
-                "═══════════════════════════════════════════════════════════════\n" +
-                "\n" +
-                "Your MongoDB credentials are incorrect or expired.\n" +
-                "\n" +
-                "🔧 QUICK FIX:\n" +
-                "1. Check MongoDB Atlas (https://cloud.mongodb.com/)\n" +
-                "   - Verify user exists in 'Database Access'\n" +
-                "   - Verify your IP is whitelisted in 'Network Access'\n" +
-                "\n" +
-                "2. Update environment variables in PowerShell:\n" +
-                "   [System.Environment]::SetEnvironmentVariable('MONGODB_USERNAME', 'YourUsername', 'User')\n" +
-                "   [System.Environment]::SetEnvironmentVariable('MONGODB_PASSWORD', 'YourPassword', 'User')\n" +
-                "\n" +
-                "3. ⚠️  RESTART IntelliJ IDEA after changing variables!\n" +
-                "\n" +
-                "📖 See MONGODB_AUTH_FIX.md for detailed instructions\n" +
-                "═══════════════════════════════════════════════════════════════\n";
-            throw new RuntimeException(errorMsg, ex);
+            throw new RuntimeException("Authentication failed when checking if user exists: " + ex.getMessage(), ex);
         } catch (MongoException ex) {
             throw new RuntimeException("Error checking if user exists: " + ex.getMessage(), ex);
         }
@@ -135,7 +113,7 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
     public void save(User user) {
         try {
             if (existsByName(user.getName())) {
-                throw new RuntimeException("User already exists: " + user.getName());
+                                throw new RuntimeException("Registration failed: username is unavailable.");
             }
 
             // Hash the password before storing (IMPORTANT for security!)
@@ -143,7 +121,8 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
             Document userDoc = new Document()
                     .append(USERNAME_FIELD, user.getName())
-                    .append(PASSWORD_FIELD, hashedPassword);
+                    .append(PASSWORD_FIELD, hashedPassword)
+                    .append(HIGHSCORES_FIELD, user.getHighscores());
 
             usersCollection.insertOne(userDoc);
 
@@ -168,6 +147,26 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
         }
     }
 
+    @Override
+    public void changeHighscore(String username, String gameName, Integer score) {
+        try {
+            // Retrieve the user to update highscores
+            User user = get(username);
+            Map<String, Integer> highscores = user.getHighscores();
+            highscores.put(gameName, score);
+
+
+            // Update the highscores in the database
+            Bson filter = Filters.eq(USERNAME_FIELD, user.getName());
+            Bson update = Updates.set(HIGHSCORES_FIELD, highscores);
+
+            usersCollection.updateOne(filter, update);
+
+        } catch (MongoException ex) {
+            throw new RuntimeException("Error updating highscore: " + ex.getMessage(), ex);
+        }
+    }
+
     /**
      * Verifies if a plain-text password matches the stored hashed password.
      * This should be used during login.
@@ -187,9 +186,82 @@ public class MongoDBUserDataAccessObject implements SignupUserDataAccessInterfac
 
             String hashedPassword = userDoc.getString(PASSWORD_FIELD);
             return BCrypt.checkpw(plainPassword, hashedPassword);
-
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException ex) {
+            // This exception is thrown by BCrypt if the hashed password format is invalid
+            System.err.println("Password verification failed due to invalid password format: " + ex.getMessage());
             return false;
+        } catch (Exception ex) {
+            // Log unexpected exceptions and rethrow as runtime exception
+            System.err.println("Unexpected error during password verification for user '" + username + "': " + ex.getMessage());
+            throw new RuntimeException("Unexpected error during password verification", ex);
+        }
+    }
+
+    @Override
+    public Map<String, Integer> getHighscoresByName(String username) {
+        try {
+            Bson filter = Filters.eq(USERNAME_FIELD, username);
+            Document userDoc = usersCollection.find(filter).first();
+
+            if (userDoc == null) {
+                throw new RuntimeException("User not found");
+            }
+
+            return getHighscoresFromDB(userDoc);
+
+        } catch (MongoException ex) {
+            throw new RuntimeException("Error retrieving highscores: " + ex.getMessage(), ex);
+        }
+    }
+
+    private Map<String, Integer> getHighscoresFromDB(Document userDoc) {
+        Map<String, Object> rawMap = userDoc.get(HIGHSCORES_FIELD, Map.class);
+        HashMap<String, Integer> highscores = new HashMap<>();
+
+        if (rawMap != null) {
+            for (Map.Entry<String, Object> entry : rawMap.entrySet()) {
+                Object value = entry.getValue();
+                if (value instanceof Integer) {
+                    highscores.put(entry.getKey(), (Integer) value);
+                }
+            }
+            return highscores;
+        }
+
+        return new HashMap<>();
+    }
+
+    @Override
+    public List<User> getTopUsersForGame(String gameName, int limit) {
+        if (limit <= 0) {
+            throw new IllegalArgumentException("Limit must be greater than 0");
+        } else if (limit > 100) {
+            limit = 100;           // Cap limit to 100 to prevent excessive data retrieval
+        }
+        try {
+            // Create a field path for sorting (e.g., "highscores.BLOCKBLAST")
+            String sortField = HIGHSCORES_FIELD + "." + gameName;
+
+            // Query: Sort by the game's score in descending order with a limit
+            List<Document> topUserDocs = usersCollection
+                    .find(Filters.exists(sortField)) // Only users who have played this game
+                    .sort(new Document(sortField, -1)) // -1 for descending order
+                    .limit(limit)
+                    .into(new ArrayList<>());
+
+            List<User> topUsers = new ArrayList<>();
+
+            for (Document userDoc : topUserDocs) {
+                String username = userDoc.getString(USERNAME_FIELD);
+                String placeholderPassword = "REDACTED";  // Use placeholder instead of empty string
+
+                topUsers.add(userFactory.create(username, placeholderPassword, getHighscoresFromDB(userDoc)));
+            }
+
+            return topUsers;
+
+        } catch (MongoException ex) {
+            throw new RuntimeException("Error fetching leaderboard: " + ex.getMessage(), ex);
         }
     }
 

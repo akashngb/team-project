@@ -39,7 +39,7 @@ public class SimpleMongoDBConfig {
     );
 
     public static final String DATABASE_NAME = "user_accounts";
-    public static final String USERS_COLLECTION = "users";
+    public static final String COLLECTION_NAME = "users";
 
     /**
      * Creates a simple MongoClient with username/password authentication.

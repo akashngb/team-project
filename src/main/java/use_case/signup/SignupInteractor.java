@@ -1,7 +1,12 @@
 package use_case.signup;
 
+import entity.LeaderBoard;
 import entity.User;
 import entity.UserFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The Signup Interactor.
@@ -35,7 +40,7 @@ public class SignupInteractor implements SignupInputBoundary {
         }
         else {
             final User user = userFactory.create(signupInputData.getUsername(),
-                    signupInputData.getPassword());
+                    signupInputData.getPassword(), new HashMap<>());
             userDataAccessObject.save(user);
 
             final SignupOutputData signupOutputData = new SignupOutputData(user.getName());

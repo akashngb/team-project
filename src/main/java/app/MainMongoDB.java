@@ -12,9 +12,12 @@ public class MainMongoDB {
                     .addLoginView()
                     .addSignupView()
                     .addLoggedInView()
+                    .addLeaderBoardView()
                     .addSignupUseCase()
                     .addLoginUseCase()
                     .addLogoutUseCase()
+                    .addLeaderBoardUseCase()
+                    .wireLeaderBoardToLoggedInView()
                     .addWordleFeature()
                     .build();
 

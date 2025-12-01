@@ -26,6 +26,12 @@ import use_case.logout.LogoutOutputBoundary;
 import use_case.signup.SignupInputBoundary;
 import use_case.signup.SignupInteractor;
 import use_case.signup.SignupOutputBoundary;
+import use_case.leaderboard.LeaderBoardInputBoundary;
+import use_case.leaderboard.LeaderBoardInteractor;
+import use_case.leaderboard.LeaderBoardOutputBoundary;
+import interface_adapter.leaderboard.LeaderBoardController;
+import interface_adapter.leaderboard.LeaderBoardPresenter;
+import interface_adapter.leaderboard.LeaderBoardViewModel;
 import view.*;
 import view.FontLoader;
 // Wordle imports
@@ -38,6 +44,13 @@ import use_case.wordle.StartGameInteractor;
 import use_case.wordle.SubmitGuessInteractor;
 import wordle.WordleView;
 
+// Chess Puzzle Imports
+import entity.ChessPuzzle;
+import data_access.RapidAPIChessPuzzleDataAccess;
+import interface_adapter.chess_puzzle.*;
+import use_case.chess_puzzle.*;
+
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,8 +62,8 @@ public class AppBuilder {
     final ViewManagerModel viewManagerModel = new ViewManagerModel();
     ViewManager viewManager = new ViewManager(cardPanel, cardLayout, viewManagerModel);
 
-    // File-based data access implementation using local CSV storage
-    final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.csv", userFactory);
+    // File-based data access implementation using local JSON storage
+    final FileUserDataAccessObject userDataAccessObject = new FileUserDataAccessObject("users.json");
 
 
     private SignupView signupView;
@@ -60,11 +73,20 @@ public class AppBuilder {
     private LoggedInView loggedInView;
     private LoginView loginView;
 
+    //Leaderboard views
+    private LeaderBoardView leaderBoardView;
+    private LeaderBoardViewModel leaderBoardViewModel;
+    private LeaderBoardController leaderBoardController;
+
     //Wordle views
     private WordleView wordleView;
     private WordleViewModel wordleViewModel;
     private WordleController wordleController;
 
+    //Chess views
+    private ChessPuzzleView chessPuzzleView;
+    private ChessPuzzleViewModel chessPuzzleViewModel;
+    private CheckMoveInteractor checkMoveInteractor;
 
     public AppBuilder() {
         FontLoader.loadFonts();
@@ -89,6 +111,17 @@ public class AppBuilder {
         loggedInViewModel = new LoggedInViewModel();
         loggedInView = new LoggedInView(loggedInViewModel, viewManagerModel);
         cardPanel.add(loggedInView, loggedInView.getViewName());
+        return this;
+    }
+
+    /**
+     * Wire up the leaderboard controller to LoggedInView so it can pass it to games
+     * Call this AFTER addLeaderBoardUseCase()
+     */
+    public AppBuilder wireLeaderBoardToLoggedInView() {
+        if (loggedInView != null && leaderBoardController != null) {
+            loggedInView.setLeaderBoardController(leaderBoardController);
+        }
         return this;
     }
 
@@ -130,6 +163,24 @@ public class AppBuilder {
         return this;
     }
 
+    public AppBuilder addLeaderBoardView() {
+        leaderBoardViewModel = new LeaderBoardViewModel();
+        leaderBoardView = new LeaderBoardView(leaderBoardViewModel, viewManagerModel);
+        cardPanel.add(leaderBoardView, leaderBoardView.getViewName());
+        return this;
+    }
+
+    public AppBuilder addLeaderBoardUseCase() {
+        final LeaderBoardOutputBoundary leaderBoardOutputBoundary = new LeaderBoardPresenter(
+                viewManagerModel, leaderBoardViewModel);
+        final LeaderBoardInputBoundary leaderBoardInteractor = new LeaderBoardInteractor(
+                userDataAccessObject, leaderBoardOutputBoundary);
+
+        leaderBoardController = new LeaderBoardController(leaderBoardInteractor);
+        leaderBoardView.setLeaderBoardController(leaderBoardController);
+        return this;
+    }
+
     public AppBuilder addWordleFeature() {
         // Data access
         FileWordListDataAccess wordListDao = new FileWordListDataAccess();
@@ -153,8 +204,72 @@ public class AppBuilder {
         wordleView = new WordleView(wordleController, viewManagerModel, vm -> {
             if (wordleView != null) wordleView.setViewModel(vm);
         });
+
+        // Wire up leaderboard controller if available
+        if (leaderBoardController != null) {
+            wordleView.setLeaderBoardController(leaderBoardController);
+        }
+
+        // Setup username tracking from logged in state
+        loggedInViewModel.addPropertyChangeListener(evt -> {
+            if ("state".equals(evt.getPropertyName())) {
+                String currentUser = loggedInViewModel.getState().getUsername();
+                if (currentUser != null && !currentUser.isEmpty()) {
+                    wordleView.setUserId(currentUser);
+                }
+            }
+        });
+
         cardPanel.add(wordleView, "WORDLE");
 
+
+        return this;
+    }
+
+    public AppBuilder addChessPuzzleView() {
+        chessPuzzleViewModel = new ChessPuzzleViewModel();
+        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);
+
+        JPanel wrapper = new JPanel(new GridBagLayout()); // centers contents
+        wrapper.add(chessPuzzleView);
+
+        cardPanel.add(wrapper, chessPuzzleView.getViewName());
+        return this;
+    }
+
+
+    public AppBuilder addChessPuzzleUseCase() {
+        // Setup data access
+        final ChessPuzzleDataAccessInterface dataAccess =
+                new RapidAPIChessPuzzleDataAccess();
+
+        // Setup Load Puzzles use case
+        final LoadPuzzlesOutputBoundary loadPresenter =
+                new LoadPuzzlesPresenter(chessPuzzleViewModel);
+        final LoadPuzzlesInputBoundary loadInteractor =
+                new LoadPuzzlesInteractor(dataAccess, loadPresenter);
+        final LoadPuzzlesController loadController =
+                new LoadPuzzlesController(loadInteractor);
+
+        // Setup Check Move use case
+        final CheckMoveOutputBoundary checkPresenter =
+                new CheckMovePresenter(chessPuzzleViewModel);
+        checkMoveInteractor = new CheckMoveInteractor(checkPresenter);
+        final CheckMoveController checkController =
+                new CheckMoveController(checkMoveInteractor);
+
+        // Connect controllers to view
+        chessPuzzleView.setLoadPuzzlesController(loadController);
+        chessPuzzleView.setCheckMoveController(checkController);
+
+        // Add property change listener to set current puzzle
+        chessPuzzleViewModel.addPropertyChangeListener(evt -> {
+            ChessPuzzleState state = chessPuzzleViewModel.getState();
+            ChessPuzzle currentPuzzle = state.getCurrentPuzzle();
+            if (currentPuzzle != null) {
+                checkMoveInteractor.setCurrentPuzzle(currentPuzzle);
+            }
+        });
 
         return this;
     }

@@ -9,10 +9,15 @@ public class Main {
                 .addLoginView()
                 .addSignupView()
                 .addLoggedInView()
+                .addChessPuzzleView()
+                .addLeaderBoardView()
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addLogoutUseCase()
+                .addLeaderBoardUseCase()
+                .wireLeaderBoardToLoggedInView()
                 .addWordleFeature()
+                .addChessPuzzleUseCase()
                 .build();
 
         application.pack();
