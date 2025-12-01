@@ -247,6 +247,8 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         leaderboardButton.setForeground(Color.BLACK);
         leaderboardButton.addActionListener(e -> {
             if (viewManagerModel != null) {
+                // Switch to leaderboard view and refresh its data
+                submitScoreToLeaderboard();
                 viewManagerModel.setState("leaderboard");
                 viewManagerModel.firePropertyChange();
             }
@@ -571,7 +573,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
     private void submitScoreToLeaderboard() {
         if (leaderBoardController != null && userId != null) {
-            leaderBoardController.execute(userId, eloRating, String.valueOf(Games.CHEZZPUZZLES));
+            leaderBoardController.execute(userId, eloRating, String.valueOf(Games.CHESSPUZZLES));
         }
     }
 

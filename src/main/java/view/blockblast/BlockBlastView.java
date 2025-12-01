@@ -93,6 +93,8 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
         leaderboardButton.setFont(leaderboardButton.getFont().deriveFont(Font.BOLD, 16f));
         leaderboardButton.addActionListener(e -> {
             if (viewManagerModel != null) {
+                // Switch to leaderboard view and refresh its data
+                submitScoreToLeaderboard(0);
                 viewManagerModel.setState("leaderboard");
                 viewManagerModel.firePropertyChange();
             }
