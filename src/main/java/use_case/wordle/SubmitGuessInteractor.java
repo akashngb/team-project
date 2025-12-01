@@ -32,30 +32,26 @@ public class SubmitGuessInteractor implements SubmitGuessInputBoundary {
         String guess = request.getGuess();
 
         if (guess == null || guess.length() != WordleGame.WORD_LENGTH) {
-            WordleOutputData out = new WordleOutputData(
-                    game.getGuesses(), // preserve all previous guesses
+            presenter.presentGuessResult(new WordleOutputData(
+                    game.getGuesses(),
                     WordleGame.MAX_ATTEMPTS - game.getGuesses().size(),
                     game.isFinished(),
                     game.isWon(),
-                    null, // keep the answer hidden
-                    "Guess must be " + WordleGame.WORD_LENGTH + " letters." // only message
-            );
-            presenter.presentGuessResult(out); // update message but keep board intact
+                    null,
+                    "Guess must be " + WordleGame.WORD_LENGTH + " letters."
+            ));
             return;
         }
 
-
         if (!wordList.isValidWord(guess)) {
-            WordleGame gameState = game; // keep current guesses
-            WordleOutputData out = new WordleOutputData(
-                    gameState.getGuesses(), // keep all past guesses
-                    WordleGame.MAX_ATTEMPTS - gameState.getGuesses().size(),
-                    gameState.isFinished(),
-                    gameState.isWon(),
-                    null, // answer hidden
+            presenter.presentGuessResult(new WordleOutputData(
+                    game.getGuesses(),
+                    WordleGame.MAX_ATTEMPTS - game.getGuesses().size(),
+                    game.isFinished(),
+                    game.isWon(),
+                    null,
                     "'" + guess + "' is not a valid word."
-            );
-            presenter.presentGuessResult(out); // update view modle
+            ));
             return;
         }
 
@@ -63,60 +59,29 @@ public class SubmitGuessInteractor implements SubmitGuessInputBoundary {
             Guess g = game.submitGuess(guess);
 
             if (game.isFinished()) {
-
+                int points = 0;
                 if (game.isWon()) {
-                    int guessesUsed = game.getGuesses().size();
-                    int points = Math.max(0, 6 - guessesUsed);
-                    sessionGateway.addScore(userId, points);
-                } else {
-                    // Penalty for losing
-                    sessionGateway.addScore(userId, -1); // subtract 1 point
+                    // Remaining guesses = MAX_ATTEMPTS - guessesUsed + 1
+                    points = WordleGame.MAX_ATTEMPTS - game.getGuesses().size() + 1;
                 }
-
+                sessionGateway.addScore(userId, points);
                 sessionGateway.remove(userId);
+            } else {
+                sessionGateway.save(userId, game);
             }
-            sessionGateway.save(userId, game);
 
-            WordleOutputData out = new WordleOutputData(
+            presenter.presentGuessResult(new WordleOutputData(
                     game.getGuesses(),
                     WordleGame.MAX_ATTEMPTS - game.getGuesses().size(),
                     game.isFinished(),
                     game.isWon(),
                     game.isFinished() ? game.getAnswer() : null,
                     "Guess accepted"
-            );
-
-            if (game.isFinished()) {
-                if (game.isWon()) {
-                    int guessesUsed = game.getGuesses().size();
-                    int points = Math.max(0, 6 - guessesUsed);
-                    sessionGateway.addScore(userId, points);
-                } else {
-                    sessionGateway.addScore(userId, 0);
-                }
-            }
-
-            if (game.isFinished()) {
-                if (game.isWon()) {
-                    int guessesUsed = game.getGuesses().size();
-                    int points = Math.max(0, 6 - guessesUsed);
-                    sessionGateway.addScore(userId, points);
-                } else {
-                    sessionGateway.addScore(userId, 0);
-                }
-            }
-
-            presenter.presentGuessResult(out);
-
-            if (game.isFinished()) {
-                sessionGateway.remove(userId);
-            }
-
-
-
+            ));
 
         } catch (Exception e) {
             presenter.presentError("Error submitting guess: " + e.getMessage());
         }
     }
+
 }
