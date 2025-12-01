@@ -17,7 +17,6 @@ public class CheckMovePresenter implements CheckMoveOutputBoundary {
     public void presentCorrectMove(CheckMoveOutputData outputData) {
         ChessPuzzleState state = viewModel.getState();
         state.setFeedback(outputData.getFeedback());
-        state.setComputerMove(outputData.getComputerMove());  // Set the computer move
         viewModel.firePropertyChange("move_result");
     }
 
@@ -25,7 +24,6 @@ public class CheckMovePresenter implements CheckMoveOutputBoundary {
     public void presentIncorrectMove(String feedback) {
         ChessPuzzleState state = viewModel.getState();
         state.setFeedback(feedback);
-        state.setComputerMove(null);  // No computer move on incorrect
         viewModel.firePropertyChange("move_result");
     }
 
