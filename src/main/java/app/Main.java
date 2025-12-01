@@ -10,9 +10,12 @@ public class Main {
                 .addSignupView()
                 .addLoggedInView()
                 .addChessPuzzleView()
+                .addLeaderBoardView()
                 .addSignupUseCase()
                 .addLoginUseCase()
                 .addLogoutUseCase()
+                .addLeaderBoardUseCase()
+                .wireLeaderBoardToLoggedInView()
                 .addWordleFeature()
                 .addChessPuzzleUseCase()
                 .build();

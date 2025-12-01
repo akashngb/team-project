@@ -2,8 +2,10 @@ package view.blockblast;
 
 import entity.blockblast.Piece;
 import entity.blockblast.PieceColor;
+import interface_adapter.ViewManagerModel;
 import interface_adapter.blockblast.BlockBlastController;
 import interface_adapter.blockblast.BlockBlastViewModel;
+import interface_adapter.leaderboard.LeaderBoardController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +18,10 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
 
     private final BlockBlastViewModel viewModel;
     private final BlockBlastController controller;
+    private ViewManagerModel viewManagerModel;
+    private LeaderBoardController leaderBoardController;
+    private String userId = "default-user"; // Will be set from logged-in user
+    private boolean scoreSubmitted = false; // Track if score was already submitted for current game
 
     private static final int CELL_SIZE = 50;
     private static final int OFFSET_Y  = 100;
@@ -33,9 +39,11 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
     private int selectedPieceIndex = -1;
 
     public BlockBlastView(BlockBlastViewModel viewModel,
-                          BlockBlastController controller) {
+                          BlockBlastController controller,
+                          ViewManagerModel viewManagerModel) {
         this.viewModel = viewModel;
         this.controller = controller;
+        this.viewManagerModel = viewManagerModel;
         this.viewModel.addPropertyChangeListener(this);
         this.setLayout(new BorderLayout());
         this.setOpaque(false);
@@ -55,12 +63,41 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
         newGameButton.setFont(newGameButton.getFont().deriveFont(Font.BOLD, 16f));
         newGameButton.addActionListener(e -> {
             selectedPieceIndex = -1; // 选中状态也一起清空
+            resetScoreSubmission(); // Reset score submission flag for new game
             controller.newGame();
+        });
+
+        JButton backButton = new JButton("Back");
+        backButton.setFocusPainted(false);
+        backButton.setBackground(new Color(128, 128, 128, 220));
+        backButton.setForeground(Color.WHITE);
+        backButton.setFont(backButton.getFont().deriveFont(Font.BOLD, 16f));
+        backButton.addActionListener(e -> {
+            if (viewManagerModel != null) {
+                viewManagerModel.setState("logged in");
+                viewManagerModel.firePropertyChange();
+            }
+        });
+
+        JButton leaderboardButton = new JButton("Leaderboard");
+        leaderboardButton.setFocusPainted(false);
+        leaderboardButton.setBackground(new Color(255, 215, 0, 220)); // Gold color
+        leaderboardButton.setForeground(Color.BLACK);
+        leaderboardButton.setFont(leaderboardButton.getFont().deriveFont(Font.BOLD, 16f));
+        leaderboardButton.addActionListener(e -> {
+            if (viewManagerModel != null) {
+                viewManagerModel.setState("leaderboard");
+                viewManagerModel.firePropertyChange();
+            }
         });
 
         topBar.add(scoreLabel);
         topBar.add(Box.createHorizontalStrut(30));
         topBar.add(newGameButton);
+        topBar.add(Box.createHorizontalStrut(10));
+        topBar.add(backButton);
+        topBar.add(Box.createHorizontalStrut(10));
+        topBar.add(leaderboardButton);
         topBar.add(Box.createHorizontalStrut(30));
         topBar.add(messageLabel);
         add(topBar, BorderLayout.NORTH);
@@ -278,7 +315,34 @@ public class BlockBlastView extends JPanel implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         scoreLabel.setText("Score: " + viewModel.getScore());
         messageLabel.setText(viewModel.getMessage());
+
+        // Check if game is over and submit score to leaderboard
+        if (viewModel.isGameOver() && !scoreSubmitted) {
+            submitScoreToLeaderboard(viewModel.getScore());
+            scoreSubmitted = true; // Prevent multiple submissions
+        }
+
         repaint();
         previewPanel.repaint();
+    }
+
+    private void submitScoreToLeaderboard(int finalScore) {
+        if (leaderBoardController != null && userId != null) {
+            // Submit to leaderboard - it will check if it's a new highscore
+            leaderBoardController.execute(userId, finalScore, "BLOCKBLAST");
+        }
+    }
+
+    public void setLeaderBoardController(LeaderBoardController leaderBoardController) {
+        this.leaderBoardController = leaderBoardController;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    // Reset score submission flag when starting a new game
+    private void resetScoreSubmission() {
+        scoreSubmitted = false;
     }
 }

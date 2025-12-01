@@ -1,6 +1,7 @@
 package view;
 
 import interface_adapter.ViewManagerModel;
+import interface_adapter.leaderboard.LeaderBoardController;
 import interface_adapter.logged_in.ChangePasswordController;
 import interface_adapter.logged_in.ChangePasswordController; // Keep import for setter
 import interface_adapter.logged_in.LoggedInState;
@@ -27,6 +28,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private final String viewName = "logged in";
     private final LoggedInViewModel loggedInViewModel;
     private LogoutController logoutController;
+    private LeaderBoardController leaderBoardController;
 
     // New buttons for the menu options
     private final JButton blockBlastButton;
@@ -214,7 +216,8 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     public void actionPerformed(ActionEvent evt) {
         // Implement navigation logic here later. For now, print a message.
         if (evt.getSource().equals(blockBlastButton)) {
-            JFrame frame = BlockBlastAppBuilder.buildFrame();
+            String currentUser = loggedInViewModel.getState().getUsername();
+            JFrame frame = BlockBlastAppBuilder.buildFrame(viewManagerModel, leaderBoardController, currentUser);
             frame.setVisible(true);
             // Placeholder for new controller.execute() for Screen One
         } else if (evt.getSource().equals(wordleButton)) {
@@ -248,5 +251,10 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
 
     public void setLogoutController(LogoutController logoutController) {
         this.logoutController = logoutController;
+    }
+}
+
+    public void setLeaderBoardController(LeaderBoardController leaderBoardController) {
+        this.leaderBoardController = leaderBoardController;
     }
 }
