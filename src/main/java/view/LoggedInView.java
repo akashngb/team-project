@@ -35,7 +35,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
     private final JButton wordleButton;
     private final JButton chessButton;
     private final JButton logOutButton; // Keep the Log Out button
-    private final FadingImagePanel backgroundScreen;
+    private final FadeImagePanel backgroundScreen;
     private JButton currentlySelectedButton;
 
     private JButton createGameButton(String gameName, String imagePath, Font gameTitleFont) {
@@ -112,7 +112,7 @@ public class LoggedInView extends JPanel implements ActionListener, PropertyChan
         logOutButton.setBorderPainted(true); // Ensure padding is rendered
         logOutButton.setFocusPainted(false); // Remove focus border
 
-        backgroundScreen = new FadingImagePanel("/images/blockblast_background.jpg");
+        backgroundScreen = new FadeImagePanel("/images/blockblast_background.jpg");
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         backgroundScreen.setLayout(new BoxLayout(backgroundScreen, BoxLayout.Y_AXIS));
 
