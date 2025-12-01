@@ -6,7 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 
-class FadingImagePanel extends ImagePanel implements ActionListener {
+class FadeImagePanel extends ImagePanel implements ActionListener {
     private Image currentImage;
     private Image nextImage;
     private String nextImagePath;
@@ -16,7 +16,7 @@ class FadingImagePanel extends ImagePanel implements ActionListener {
     private final int STEPS = 20;
     private final int DELAY = DURATION / STEPS;
 
-    public FadingImagePanel(String initialPath) {
+    public FadeImagePanel(String initialPath) {
         super(initialPath); // Call the original ImagePanel constructor
         this.currentImage = super.getImage(); // Get initial image set by super
         this.timer = new Timer(DELAY, this);
