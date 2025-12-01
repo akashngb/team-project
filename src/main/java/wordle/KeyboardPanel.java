@@ -37,7 +37,7 @@ public class KeyboardPanel extends JPanel {
 
     private JButton makeKeyButton(String label, ActionListener l) {
         JButton b = new JButton(label);
-        b.setPreferredSize(new Dimension(48, 36));
+        b.setPreferredSize(new Dimension(54, 36));
         b.setFont(WordleStyles.KEY_FONT);
         b.setFocusable(false);
         b.setActionCommand(label);
