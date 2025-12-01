@@ -15,7 +15,9 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-
+import javax.swing.JRootPane;
+import java.awt.event.HierarchyEvent;
+import javax.swing.SwingUtilities;
 /**
  * The View for when the user is logging into the program.
  */
@@ -107,7 +109,6 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         buttons.add(goToSignUp);
         buttons.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // --- 2. Transparency Setup (Consolidated) ---
         // Set all components to transparent BEFORE adding them to the form
         title.setOpaque(false);
         usernameLabel.setOpaque(false); // Make sure the label is transparent
@@ -117,8 +118,6 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         usernameErrorField.setOpaque(false);
         passwordErrorField.setOpaque(false);
         buttons.setOpaque(false);
-
-        // --- 3. Layout Structure (Consolidated) ---
 
         // Panel for vertical stacking and left alignment
         final JPanel formContentPanel = new JPanel();
@@ -136,8 +135,6 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         formContentPanel.add(Box.createVerticalStrut(40));
         formContentPanel.add(buttons);
         formContentPanel.add(Box.createVerticalGlue());
-
-        // --- 4. Main View and Background Setup ---
 
         ImagePanel background = new ImagePanel("/images/LoginScreenBackground.png");
         background.setLayout(new BorderLayout());
@@ -164,8 +161,14 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
 
         this.setLayout(new BorderLayout()); // Set main panel layout
         this.add(background, BorderLayout.CENTER); // Add background to fill the main panel
-
-        // --- 5. Listeners and Controllers ---
+        this.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) != 0) {
+                JRootPane rootPane = SwingUtilities.getRootPane(LoginView.this);
+                if (rootPane != null) {
+                    rootPane.setDefaultButton(logIn);
+                }
+            }
+        });
 
         logIn.addActionListener(
                 evt -> {
