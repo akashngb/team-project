@@ -1,12 +1,14 @@
 package view;
 
 import entity.ChessPuzzle;
+import entity.Games;
 import entity.PuzzleMove;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.chess_puzzle.CheckMoveController;
 import interface_adapter.chess_puzzle.ChessPuzzleState;
 import interface_adapter.chess_puzzle.ChessPuzzleViewModel;
 import interface_adapter.chess_puzzle.LoadPuzzlesController;
+import interface_adapter.leaderboard.LeaderBoardController;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -24,6 +26,8 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
     private ChessBoardPanel boardPanel;
     private JLabel feedbackLabel;
+    private JLabel turnIndicatorLabel;
+    private JLabel scoreLabel;
     private JButton nextButton;
     private JButton solutionButton;
     private JLabel ratingLabel;
@@ -33,12 +37,17 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
     private LoadPuzzlesController loadPuzzlesController;
     private CheckMoveController checkMoveController;
+    private LeaderBoardController leaderBoardController;
 
     private int currentMoveIndex = 0;
     private List<String> moveHistory = new ArrayList<>();
+    private int eloRating = 800; // Start at 800 ELO
+    private String userId = "default-user";
+    private boolean puzzleSolved = false;
+
+    private static final int K_FACTOR = 32; // standard multiplier in the Elo rating system that determines how much a player's rating changes after a game
 
     public ChessPuzzleView(ChessPuzzleViewModel viewModel, ViewManagerModel viewManagerModel) {
-        // Sets all of the starting information to create the puzzle view
         this.viewModel = viewModel;
         this.viewManagerModel = viewManagerModel;
         this.viewModel.addPropertyChangeListener(this);
@@ -84,30 +93,53 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         panel.setOpaque(false);
 
         JLabel titleLabel = new JLabel("Chess Puzzle");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        titleLabel.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 60f));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // Score label (now ELO rating)
+        scoreLabel = new JLabel("ELO: " + eloRating);
+        scoreLabel.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
+        scoreLabel.setForeground(new Color(255, 215, 0)); // gold-ish color
+        scoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         ratingLabel = new JLabel("Rating: -");
-        ratingLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        ratingLabel.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
         ratingLabel.setForeground(new Color(200, 200, 200));
         ratingLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         themesLabel = new JLabel("Themes: -");
-        themesLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        themesLabel.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
         themesLabel.setForeground(new Color(180, 180, 180));
         themesLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        // Turn indicator with color background
+        turnIndicatorLabel = new JLabel("White to Move");
+        turnIndicatorLabel.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
+        turnIndicatorLabel.setForeground(Color.BLACK);
+        turnIndicatorLabel.setBackground(Color.WHITE);
+        turnIndicatorLabel.setOpaque(true);
+        turnIndicatorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        turnIndicatorLabel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(100, 100, 100), 2),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+        turnIndicatorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         feedbackLabel = new JLabel("Click 'Load Puzzles' to begin");
-        feedbackLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        feedbackLabel.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
         feedbackLabel.setForeground(new Color(100, 255, 100));
         feedbackLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         panel.add(titleLabel);
         panel.add(Box.createVerticalStrut(10));
+        panel.add(scoreLabel);
+        panel.add(Box.createVerticalStrut(5));
         panel.add(ratingLabel);
         panel.add(themesLabel);
         panel.add(Box.createVerticalStrut(15));
+        panel.add(turnIndicatorLabel);
+        panel.add(Box.createVerticalStrut(10));
         panel.add(feedbackLabel);
 
         return panel;
@@ -128,14 +160,14 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
                 "Move History",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 14),
+                FontLoader.jersey10.deriveFont(Font.PLAIN, 35f),
                 Color.WHITE
         );
         historyPanel.setBorder(historyBorder);
 
         moveHistoryArea = new JTextArea(10, 20);
         moveHistoryArea.setEditable(false);
-        moveHistoryArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        moveHistoryArea.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
         moveHistoryArea.setBackground(new Color(30, 30, 30));
         moveHistoryArea.setForeground(new Color(200, 200, 200));
         moveHistoryArea.setText("No moves yet...");
@@ -152,14 +184,14 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
                 "Analysis",
                 TitledBorder.LEFT,
                 TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 14),
+                FontLoader.jersey10.deriveFont(Font.PLAIN, 35f),
                 Color.WHITE
         );
         evalPanel.setBorder(evalBorder);
 
         evaluationArea = new JTextArea(8, 20);
         evaluationArea.setEditable(false);
-        evaluationArea.setFont(new Font("Arial", Font.PLAIN, 12));
+        evaluationArea.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
         evaluationArea.setBackground(new Color(30, 30, 30));
         evaluationArea.setForeground(new Color(200, 200, 200));
         evaluationArea.setLineWrap(true);
@@ -201,16 +233,39 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         nextButton.setEnabled(false);
         nextButton.addActionListener(e -> nextPuzzle());
 
+        JButton backButton = new JButton("Back");
+        styleButton(backButton, new Color(128, 128, 128));
+        backButton.addActionListener(e -> {
+            if (viewManagerModel != null) {
+                viewManagerModel.setState("logged in");
+                viewManagerModel.firePropertyChange();
+            }
+        });
+
+        JButton leaderboardButton = new JButton("Leaderboard");
+        styleButton(leaderboardButton, new Color(255, 215, 0));
+        leaderboardButton.setForeground(Color.BLACK);
+        leaderboardButton.addActionListener(e -> {
+            if (viewManagerModel != null) {
+                // Switch to leaderboard view and refresh its data
+                submitScoreToLeaderboard();
+                viewManagerModel.setState("leaderboard");
+                viewManagerModel.firePropertyChange();
+            }
+        });
+
         panel.add(loadButton);
         panel.add(resetButton);
         panel.add(solutionButton);
         panel.add(nextButton);
+        panel.add(backButton);
+        panel.add(leaderboardButton);
 
         return panel;
     }
 
     private void styleButton(JButton button, Color bgColor) {
-        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 20f));
         button.setPreferredSize(new Dimension(140, 45));
         button.setBackground(bgColor);
         button.setForeground(Color.WHITE);
@@ -229,8 +284,22 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         });
     }
 
+    private void updateTurnIndicator() {
+        // Determine whose turn it is based on move index
+        boolean isWhiteTurn = (currentMoveIndex % 2 == 0);
+
+        if (isWhiteTurn) {
+            turnIndicatorLabel.setText("White to Move");
+            turnIndicatorLabel.setForeground(Color.BLACK);
+            turnIndicatorLabel.setBackground(Color.WHITE);
+        } else {
+            turnIndicatorLabel.setText("Black to Move");
+            turnIndicatorLabel.setForeground(Color.WHITE);
+            turnIndicatorLabel.setBackground(Color.BLACK);
+        }
+    }
+
     private void handleMove(PuzzleMove move) {
-        // When a move is made, this is how the information is passed between the BoardPanel and PuzzleView
         String newFen = "";
         if (checkMoveController == null) {
             boardPanel.onMoveValidated(false);
@@ -241,13 +310,11 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         ChessPuzzleState state = viewModel.getState();
         ChessPuzzle puzzle = state.getCurrentPuzzle();
 
-        // Checking if a puzzle is present
         if (puzzle == null) {
             boardPanel.onMoveValidated(false);
             return;
         }
 
-        // Check if already solved
         if (currentMoveIndex >= puzzle.getSolutionMoves().size()) {
             boardPanel.onMoveValidated(false);
             feedbackLabel.setText("Puzzle already solved!");
@@ -255,49 +322,47 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
             return;
         }
 
-        // Checking is the move made was correct or not
         String correctMove = puzzle.getSolutionMoves().get(currentMoveIndex);
         boolean isCorrect = moveStr.equals(correctMove);
 
-        System.out.println("Player move: " + moveStr);
-        System.out.println("Correct move: " + correctMove);
-        System.out.println("Is correct: " + isCorrect);
-
-        // Validate the move on the board
         newFen = boardPanel.onMoveValidated(isCorrect);
 
         if (isCorrect) {
-            // Add to move history
             moveHistory.add(moveStr);
             updateMoveHistory();
 
-            // Update the controller
             checkMoveController.execute(moveStr, currentMoveIndex);
             currentMoveIndex++;
 
-            // Storing the board state in the puzzle
             puzzle.setNewFen(newFen);
-
-            // Updating the visual of the board
             boardPanel.loadPosition(newFen);
 
-            // Update evaluation
             updateEvaluation(moveStr);
+            updateTurnIndicator();
 
-            // Update feedback
             feedbackLabel.setText("Correct! Keep going...");
             feedbackLabel.setForeground(new Color(100, 255, 100));
 
-            // Check if puzzle is solved
             if (currentMoveIndex >= puzzle.getSolutionMoves().size()) {
-                feedbackLabel.setText("🎉 Puzzle Solved!");
+                // when puzzle is solved
+                if (!puzzleSolved) {
+                    int eloGain = calculateEloGain(puzzle.getRating());
+                    eloRating += eloGain;
+                    updateScore();
+                    submitScoreToLeaderboard();
+                    puzzleSolved = true;
+
+                    // display elo gain feedback
+                    feedbackLabel.setText(String.format("Puzzle Solved! +%d ELO", eloGain));
+                }
+
                 feedbackLabel.setForeground(new Color(100, 255, 100));
-                evaluationArea.setText("Congratulations!\nYou solved the puzzle!");
+                evaluationArea.setText(String.format("Congratulations!\nYou solved the puzzle!\n\nELO Gain: +%d\nNew ELO: %d",
+                        calculateEloGain(puzzle.getRating()), eloRating));
                 nextButton.setEnabled(state.hasNextPuzzle());
             }
         } else {
-            // Wrong move - feedback
-            feedbackLabel.setText("❌ Incorrect move! Try again.");
+            feedbackLabel.setText("x Incorrect move! Try again.");
             feedbackLabel.setForeground(new Color(255, 100, 100));
 
             evaluationArea.setText(String.format(
@@ -310,7 +375,6 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
     }
 
     private void updateMoveHistory() {
-        // Keeping track of the moves that have been made so far
         StringBuilder history = new StringBuilder();
         for (int i = 0; i < moveHistory.size(); i++) {
             int moveNum = (i / 2) + 1;
@@ -355,7 +419,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         if (loadPuzzlesController != null) {
             feedbackLabel.setText("Loading puzzles...");
             feedbackLabel.setForeground(new Color(100, 200, 255));
-            loadPuzzlesController.execute(25, 1500);
+            loadPuzzlesController.execute(25, eloRating);
         }
     }
 
@@ -364,10 +428,12 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         state.nextPuzzle();
         currentMoveIndex = 0;
         moveHistory.clear();
+        puzzleSolved = false; // Reset for new puzzle
 
         ChessPuzzle puzzle = state.getCurrentPuzzle();
         if (puzzle != null) {
             loadPuzzleToBoard(puzzle);
+            updateTurnIndicator();
             feedbackLabel.setText("Make your move!");
             feedbackLabel.setForeground(new Color(100, 255, 100));
             solutionButton.setEnabled(true);
@@ -387,8 +453,10 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         if (puzzle != null) {
             currentMoveIndex = 0;
             moveHistory.clear();
+            puzzleSolved = false; // reset solved flag
 
             boardPanel.loadPosition(puzzle.getFen());
+            updateTurnIndicator();
 
             feedbackLabel.setText("Puzzle reset. Try again!");
             feedbackLabel.setForeground(new Color(100, 200, 255));
@@ -405,7 +473,6 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         ChessPuzzle puzzle = state.getCurrentPuzzle();
 
         if (puzzle != null) {
-            // Reset the puzzle first
             currentMoveIndex = 0;
             moveHistory.clear();
             boardPanel.loadPosition(puzzle.getFen());
@@ -413,17 +480,14 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
             feedbackLabel.setText("Playing solution...");
             feedbackLabel.setForeground(new Color(255, 180, 100));
 
-            // Animate the solution
             boardPanel.animateSolution(puzzle.getSolutionMoves(), () -> {
                 feedbackLabel.setText("Solution complete!");
                 feedbackLabel.setForeground(new Color(100, 255, 100));
 
-                // Update move history with solution
                 moveHistory.clear();
                 moveHistory.addAll(puzzle.getSolutionMoves());
                 updateMoveHistory();
 
-                // Show in evaluation area
                 StringBuilder solution = new StringBuilder("Solution played:\n\n");
                 for (int i = 0; i < puzzle.getSolutionMoves().size(); i++) {
                     int moveNum = (i / 2) + 1;
@@ -461,6 +525,7 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         ChessPuzzle puzzle = state.getCurrentPuzzle();
         if (puzzle != null) {
             loadPuzzleToBoard(puzzle);
+            updateTurnIndicator();
             solutionButton.setEnabled(true);
             nextButton.setEnabled(state.hasNextPuzzle());
         }
@@ -492,5 +557,45 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
 
     public void setCheckMoveController(CheckMoveController controller) {
         this.checkMoveController = controller;
+    }
+
+    public void setLeaderBoardController(LeaderBoardController controller) {
+        this.leaderBoardController = controller;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    private void updateScore() {
+        scoreLabel.setText("ELO: " + eloRating);
+    }
+
+    private void submitScoreToLeaderboard() {
+        if (leaderBoardController != null && userId != null) {
+            leaderBoardController.execute(userId, eloRating, String.valueOf(Games.CHESSPUZZLES));
+        }
+    }
+
+    /**
+     * Calculate ELO gain based on puzzle rating using the standard ELO formula.
+     * Expected score = 1 / (1 + 10^((puzzleRating - playerRating) / 400))
+     * ELO change = K * (actualScore - expectedScore)
+     *
+     * @param puzzleRating the difficulty rating of the puzzle
+     * @return the ELO points gained
+     */
+    private int calculateEloGain(int puzzleRating) {
+        // calculate expected score (probability of winning)
+        double expectedScore = 1.0 / (1.0 + Math.pow(10.0, (puzzleRating - eloRating) / 400.0));
+
+        // actual score is 1 (we solved it)
+        double actualScore = 1.0;
+
+        // calculate ELO change
+        int eloChange = (int) Math.round(K_FACTOR * (actualScore - expectedScore));
+
+        // ensure minimum gain of 1 point
+        return Math.max(1, eloChange);
     }
 }

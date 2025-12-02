@@ -15,7 +15,7 @@ public class LogoutInteractorTest {
     private FileUserDataAccessObject fileDAO; // Use the real DAO
     private LogoutOutputBoundary mockPresenter;
     private LogoutInteractor interactor;
-    private UserFactory userFactory;
+    private UserFactory userFactory; // Retained for Interactor's constructor
 
     private final String TEST_FILE_PATH = "users.csv";
     private final String LOGGED_IN_USER = "LoggedInUser";
@@ -25,14 +25,13 @@ public class LogoutInteractorTest {
         // Initialize dependencies
         userFactory = new UserFactory();
         mockPresenter = mock(LogoutOutputBoundary.class);
-        
-        // Instantiate the actual DAO
-        // The fileDAO implements LogoutUserDataAccessInterface, so it works here.
-        fileDAO = new FileUserDataAccessObject(TEST_FILE_PATH, userFactory);
-        
+
+        // Instantiate the actual DAO (NO FACTORY PASSED HERE)
+        fileDAO = new FileUserDataAccessObject(TEST_FILE_PATH); // <--- UPDATED: DAO Constructor
+
         // Set up known state: Simulate a user being logged in
-        fileDAO.setCurrentUsername(LOGGED_IN_USER); 
-        
+        fileDAO.setCurrentUsername(LOGGED_IN_USER);
+
         // Create Interactor, injecting the actual DAO
         interactor = new LogoutInteractor(fileDAO, mockPresenter);
     }
@@ -40,7 +39,6 @@ public class LogoutInteractorTest {
     @AfterEach
     void tearDown() {
         // Delete the physical test file after each run
-        // This is necessary if you were using save functionality, but good practice anyway.
         File file = new File(TEST_FILE_PATH);
         if (file.exists()) {
             file.delete();
@@ -60,7 +58,6 @@ public class LogoutInteractorTest {
         assertNull(fileDAO.getCurrentUsername(), "The current username in the DAO should be null after logout.");
 
         // Verify Presenter was called with the LogoutOutputData (containing the username that logged out)
-        // We can capture the output data to verify the username passed to the presenter.
         verify(mockPresenter, times(1)).prepareSuccessView(any(LogoutOutputData.class));
     }
 }
