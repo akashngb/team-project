@@ -1,0 +1,15 @@
+{
+  "hi": {
+    "name": "hi",
+    "password": "test",
+    "highscores": {}
+  },
+  "akash": {
+    "name": "akash",
+    "password": "toro",
+    "highscores": {
+      "WORDLE": 5,
+      "CHESSPUZZLES": 800
+    }
+  }
+}
