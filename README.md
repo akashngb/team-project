@@ -39,7 +39,7 @@ Sign Up Screen
 ![SignUpScreen.png](src/main/resources/images/readme/SignUpScreen.png)
 
 Game Menu
-![GameMenu.png](src/main/resources/images/readme/GameMenu.png)
+![GameMenu2.png](src/main/resources/images/readme/GameMenu2.png)
 
 Wordle
 ![WordleGame.png](src/main/resources/images/readme/WordleGame.png)
