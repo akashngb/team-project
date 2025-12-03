@@ -35,22 +35,20 @@
 Login Screen
 ![LoginScreenFilled.png](src/main/resources/images/readme/LoginScreenFilled.png)
 
-Sign Up Screen
-![SignUpScreen.png](src/main/resources/images/readme/SignUpScreen.png)
-
-Game Menu
-![GameMenu.png](src/main/resources/images/readme/GameMenu.png)
-
 Wordle
 ![WordleGame.png](src/main/resources/images/readme/WordleGame.png)
+
+Leaderboard
+![Leaderboard2.png](src/main/resources/images/readme/Leaderboard2.png)
 
 Block Blast
 ![BlockBlast2.png](src/main/resources/images/readme/BlockBlast2.png)
 
+Game Menu
+![GameMenu.png](src/main/resources/images/readme/GameMenu.png)
+
 Chess Puzzles
 ![ChessPuzzleMoving.png](src/main/resources/images/readme/ChessPuzzleMoving.png)
 
-Leaderboard
-![Leaderboard2.png](src/main/resources/images/readme/Leaderboard2.png)
 
 
