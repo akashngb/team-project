@@ -30,5 +30,18 @@
 - MongoDB -> It is user database that contains usernames, hashed passwords, and information about each of the players including their highscores. The API itself is a database that stores data in JSON-like documents
 - RapidAPI -> This API was used to generate the chess puzzles used for the Chess Puzzle game as it provided the board state, moves needed to solve it, and difficulty.
 
+Screenshots of our program are provided below.
+
+![LogInScreen.png](src/main/resources/images/LogInScreen.png)
+![SignUpScreen.png](src/main/resources/images/SignUpScreen.png)
+![GameMenu.png](src/main/resources/images/GameMenu.png)
+![WordleGame.png](src/main/resources/images/WordleGame.png)
+![BlockBlastGame.png](src/main/resources/images/BlockBlastGame.png)
+![BlockBlast2.png](src/main/resources/images/BlockBlast2.png)
+![Leaderboard.png](src/main/resources/images/Leaderboard.png)
+![Leaderboard2.png](src/main/resources/images/Leaderboard2.png)
+![ChessPuzzle.png](src/main/resources/images/ChessPuzzle.png)
+![ChessPuzzleMoving.png](src/main/resources/images/ChessPuzzleMoving.png)
+![ChessPuzzleMiddleState.png](src/main/resources/images/ChessPuzzleMiddleState.png)
 
 
