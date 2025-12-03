@@ -78,4 +78,19 @@ class StartGameInteractorTest {
         assertEquals(-1, data.getAnswerIndex());
     }
 
+    @Test
+    void start_deterministicNegativeIndex_usesPickAnswer() {
+        when(wordList.pickAnswer()).thenReturn("zebra"); // should hit else branch
+
+        // deterministic = true, but negative index triggers else
+        StartGameInputData req = new StartGameInputData("u5", true, -3);
+        interactor.start(req);
+
+        ArgumentCaptor<WordleGame> captor = ArgumentCaptor.forClass(WordleGame.class);
+        verify(sessionGateway).save(eq("u5"), captor.capture());
+        WordleGame saved = captor.getValue();
+        assertEquals("zebra", saved.getAnswer());
+        verify(presenter).presentStart(any());
+    }
+
 }
