@@ -5,7 +5,7 @@ package use_case.chess_puzzle;
  */
 public class CheckMoveOutputData {
     private final String feedback; // For analysis
-    public final boolean isCorrect; // Check correctness
+    private final boolean isCorrect; // Check correctness
     private final boolean puzzleSolved; // Check wheter the puzzle is solved
     private final String computerMove;  // Added this field for opponent move
 
@@ -32,7 +32,7 @@ public class CheckMoveOutputData {
         return puzzleSolved;
     }
 
-    public boolean isCorrect() {
+    public boolean getIsCorrect() {
         return isCorrect;
     }
 }

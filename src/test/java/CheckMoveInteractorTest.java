@@ -30,7 +30,6 @@ class CheckMoveInteractorTest {
         }
     }
 
-    // ----------- STUB INPUT -----------
     static class StubInputData extends CheckMoveInputData {
         private final String move;
 

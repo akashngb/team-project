@@ -16,7 +16,7 @@ class CheckMoveOutputDataTest {
 
         assertEquals(feedback, data.getFeedback());
         assertEquals(feedback, data.getMessage());  // Same field returned
-        assertTrue(data.isCorrect());
+        assertTrue(data.getIsCorrect());
         assertTrue(data.isPuzzleSolved());
         assertEquals(computerMove, data.getComputerMove());
     }
@@ -32,7 +32,7 @@ class CheckMoveOutputDataTest {
 
         assertEquals(feedback, data.getFeedback());
         assertEquals(feedback, data.getMessage());
-        assertFalse(data.isCorrect());
+        assertFalse(data.getIsCorrect());
         assertFalse(data.isPuzzleSolved());
         assertEquals(computerMove, data.getComputerMove());
     }
@@ -44,7 +44,7 @@ class CheckMoveOutputDataTest {
         assertNull(data.getFeedback());
         assertNull(data.getMessage());
         assertNull(data.getComputerMove());
-        assertFalse(data.isCorrect());
+        assertFalse(data.getIsCorrect());
         assertFalse(data.isPuzzleSolved());
     }
 }
