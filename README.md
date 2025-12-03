@@ -32,16 +32,16 @@
 
 Screenshots of our program are provided below.
 
-![LogInScreen.png](src/main/resources/images/LogInScreen.png)
-![SignUpScreen.png](src/main/resources/images/SignUpScreen.png)
-![GameMenu.png](src/main/resources/images/GameMenu.png)
-![WordleGame.png](src/main/resources/images/WordleGame.png)
-![BlockBlastGame.png](src/main/resources/images/BlockBlastGame.png)
-![BlockBlast2.png](src/main/resources/images/BlockBlast2.png)
-![Leaderboard.png](src/main/resources/images/Leaderboard.png)
-![Leaderboard2.png](src/main/resources/images/Leaderboard2.png)
-![ChessPuzzle.png](src/main/resources/images/ChessPuzzle.png)
-![ChessPuzzleMoving.png](src/main/resources/images/ChessPuzzleMoving.png)
-![ChessPuzzleMiddleState.png](src/main/resources/images/ChessPuzzleMiddleState.png)
+![LogInScreen.png](src/main/resources/images/readme/LogInScreen.png)
+![SignUpScreen.png](src/main/resources/images/readme/SignUpScreen.png)
+![GameMenu.png](src/main/resources/images/readme/GameMenu.png)
+![WordleGame.png](src/main/resources/images/readme/WordleGame.png)
+![BlockBlastGame.png](src/main/resources/images/readme/BlockBlastGame.png)
+![BlockBlast2.png](src/main/resources/images/readme/BlockBlast2.png)
+![Leaderboard.png](src/main/resources/images/readme/Leaderboard.png)
+![Leaderboard2.png](src/main/resources/images/readme/Leaderboard2.png)
+![ChessPuzzle.png](src/main/resources/images/readme/ChessPuzzle.png)
+![ChessPuzzleMoving.png](src/main/resources/images/readme/ChessPuzzleMoving.png)
+![ChessPuzzleMiddleState.png](src/main/resources/images/readme/ChessPuzzleMiddleState.png)
 
 
