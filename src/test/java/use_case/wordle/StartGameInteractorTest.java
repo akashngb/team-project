@@ -69,4 +69,13 @@ class StartGameInteractorTest {
         assertEquals("zesty", saved.getAnswer());
         verify(presenter).presentStart(any());
     }
+
+    @Test
+    void startGameInputData_singleArgConstructor_works() {
+        StartGameInputData data = new StartGameInputData("userX");
+        assertEquals("userX", data.getUserId());
+        assertFalse(data.isDeterministic());
+        assertEquals(-1, data.getAnswerIndex());
+    }
+
 }
