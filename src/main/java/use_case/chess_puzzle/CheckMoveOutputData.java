@@ -23,4 +23,16 @@ public class CheckMoveOutputData {
     public String getComputerMove() {
         return computerMove;
     }
+
+    public String getMessage() {
+        return feedback;
+    }
+
+    public boolean isPuzzleSolved() {
+        return puzzleSolved;
+    }
+
+    public boolean getIsCorrect() {
+        return isCorrect;
+    }
 }

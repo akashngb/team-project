@@ -598,4 +598,8 @@ public class ChessPuzzleView extends JPanel implements PropertyChangeListener {
         // ensure minimum gain of 1 point
         return Math.max(1, eloChange);
     }
+
+    public ChessBoardPanel getBoardPanel() {
+        return boardPanel;
+    }
 }
