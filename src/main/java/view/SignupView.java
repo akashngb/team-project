@@ -13,7 +13,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
+import javax.swing.JRootPane;
+import java.awt.event.HierarchyEvent;
+import javax.swing.SwingUtilities;
 /**
  * The View for the Signup Use Case, now visually matching LoginView.
  */
@@ -225,7 +227,15 @@ public class SignupView extends JPanel implements ActionListener, PropertyChange
         usernameInputField.getDocument().addDocumentListener(inputFieldListener);
         passwordInputField.getDocument().addDocumentListener(inputFieldListener);
         repeatPasswordInputField.getDocument().addDocumentListener(inputFieldListener);
-        
+
+        this.addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) != 0) {
+                JRootPane rootPane = SwingUtilities.getRootPane(SignupView.this);
+                if (rootPane != null) {
+                    rootPane.setDefaultButton(signUp);
+                }
+            }
+        });
         // Action Listeners
         signUp.addActionListener(
             evt -> {

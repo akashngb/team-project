@@ -1,5 +1,6 @@
 package wordle;
 
+import entity.Games;
 import interface_adapter.ViewManagerModel;
 import interface_adapter.leaderboard.LeaderBoardController;
 import interface_adapter.wordle.WordleController;
@@ -15,6 +16,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.function.Consumer;
 
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+
 /**
  * Passive Swing view. UI events are forwarded to controller.
  * The presenter must call setViewModel(vm) via the provided viewUpdater to update the UI.
@@ -27,7 +31,6 @@ public class WordleView extends JPanel {
     private final JLabel statusLabel;
     private final JLabel scoreLabel;
     private int score = 0; // number of games won
-//    private final JLabel scoreLabel;
     private final JButton backButton;
     private ViewManagerModel viewManagerModel = null;
 
@@ -55,7 +58,7 @@ public class WordleView extends JPanel {
         logo.setAlignmentX(Component.CENTER_ALIGNMENT);
         logo.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-// Add logo to the WordleView panel (not inside boardContainer)
+        // Add logo to the WordleView panel (not inside boardContainer)
         add(Box.createVerticalStrut(20)); // adds 50px of space above the logo
         add(logo);
 
@@ -187,6 +190,7 @@ public class WordleView extends JPanel {
         leaderboardButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         leaderboardButton.addActionListener(e -> {
             // Switch to LeaderBoardView
+            submitScoreToLeaderboard(0); // Switch to leaderboard view and refresh its data
             viewManagerModel.setState("leaderboard");
             viewManagerModel.firePropertyChange();
         });
@@ -212,12 +216,17 @@ public class WordleView extends JPanel {
         add(bottom);
         add(Box.createVerticalStrut(20)); // optional bottom spacing
 
+        this.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                controller.startNewGame(userId);
+            }
+        });
+
 
         // expose vm consumer so presenter can update UI
         vmConsumer.accept(null); // no-op initial
         // immediately start a new game when the user arrives here
-        controller.startNewGame(userId);
-        SwingUtilities.invokeLater(() -> typingField.requestFocusInWindow());
 
     }
 
@@ -229,27 +238,16 @@ public class WordleView extends JPanel {
         if (vm.finished) {
             int updatedScore = controller.getScore(userId);
             scoreLabel.setText("Score: " + updatedScore);
+
             if (vm.won) {
-                score++;
                 statusLabel.setText("You win! TAB + ENTER to play again");
-                scoreLabel.setText("Score: " + score);
-                // Submit score to leaderboard
                 submitScoreToLeaderboard(updatedScore);
             } else {
-                statusLabel.setText("You lose! The answer was "
-                        + vm.answerIfFinished.toUpperCase()
-                        + ". TAB + ENTER for a new game");
-                score--;
-                if (score < 0) score = 0;
-                scoreLabel.setText("Score: " + score);
-                statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". To play again, TAB + ENTER");
-                // Submit score to leaderboard even on loss (to track total games)
+                statusLabel.setText("You lose! The answer was " + vm.answerIfFinished.toUpperCase() + ". TAB + ENTER for a new game");
                 submitScoreToLeaderboard(updatedScore);
             }
-        } else {
-            // Normal message
-            statusLabel.setText(vm.message != null ? vm.message : " ");
         }
+
 
         repaint();
     }
@@ -257,7 +255,7 @@ public class WordleView extends JPanel {
     private void submitScoreToLeaderboard(int finalScore) {
         if (leaderBoardController != null && userId != null) {
             // Submit to leaderboard - it will check if it's a new highscore
-            leaderBoardController.execute(userId, finalScore, "Wordle");
+            leaderBoardController.execute(userId, finalScore, String.valueOf(Games.WORDLE));
         }
     }
 
@@ -267,6 +265,7 @@ public class WordleView extends JPanel {
 
     public void setUserId(String userId) {
         this.userId = userId;
+        scoreLabel.setText("Score: 0");
     }
 
     private void doSubmit() {

@@ -162,7 +162,9 @@ public class FileUserDataAccessObject implements SignupUserDataAccessInterface,
     /**
      * Update a user's highscores and persist the change.
      *
-     * @param user the user with the updated highscores
+     * @param username the user with the updated highscores
+     * @param gameName the name of the game
+     * @param score    the new highscore
      */
     @Override
     public void changeHighscore(String username, String gameName, Integer score) {

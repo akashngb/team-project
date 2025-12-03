@@ -240,27 +240,36 @@ public class AppBuilder {
 
     public AppBuilder addChessPuzzleUseCase() {
         // Setup data access
-        final ChessPuzzleDataAccessInterface dataAccess =
-                new RapidAPIChessPuzzleDataAccess();
+        final ChessPuzzleDataAccessInterface dataAccess = new RapidAPIChessPuzzleDataAccess();
 
         // Setup Load Puzzles use case
-        final LoadPuzzlesOutputBoundary loadPresenter =
-                new LoadPuzzlesPresenter(chessPuzzleViewModel);
-        final LoadPuzzlesInputBoundary loadInteractor =
-                new LoadPuzzlesInteractor(dataAccess, loadPresenter);
-        final LoadPuzzlesController loadController =
-                new LoadPuzzlesController(loadInteractor);
+        final LoadPuzzlesOutputBoundary loadPresenter = new LoadPuzzlesPresenter(chessPuzzleViewModel);
+        final LoadPuzzlesInputBoundary loadInteractor = new LoadPuzzlesInteractor(dataAccess, loadPresenter);
+        final LoadPuzzlesController loadController = new LoadPuzzlesController(loadInteractor);
 
         // Setup Check Move use case
-        final CheckMoveOutputBoundary checkPresenter =
-                new CheckMovePresenter(chessPuzzleViewModel);
+        final CheckMoveOutputBoundary checkPresenter = new CheckMovePresenter(chessPuzzleViewModel);
         checkMoveInteractor = new CheckMoveInteractor(checkPresenter);
-        final CheckMoveController checkController =
-                new CheckMoveController(checkMoveInteractor);
+        final CheckMoveController checkController = new CheckMoveController(checkMoveInteractor);
 
         // Connect controllers to view
         chessPuzzleView.setLoadPuzzlesController(loadController);
         chessPuzzleView.setCheckMoveController(checkController);
+
+        // Wire up leaderboard controller
+        if (leaderBoardController != null) {
+            chessPuzzleView.setLeaderBoardController(leaderBoardController);
+        }
+
+        // Setup username tracking from logged in state
+        loggedInViewModel.addPropertyChangeListener(evt -> {
+            if ("state".equals(evt.getPropertyName())) {
+                String currentUser = loggedInViewModel.getState().getUsername();
+                if (currentUser != null && !currentUser.isEmpty()) {
+                    chessPuzzleView.setUserId(currentUser);
+                }
+            }
+        });
 
         // Add property change listener to set current puzzle
         chessPuzzleViewModel.addPropertyChangeListener(evt -> {

@@ -14,7 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * The View for when the user is logging into the program.
@@ -85,8 +86,8 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
                 20,
                 3,
                 20);
-        // Configure buttons
-        logIn = new JButton("Login"); // Adjusted text to match image
+        // Configure button
+        logIn = new JButton("Login");
         logIn.setFont(FontLoader.jersey10.deriveFont(Font.PLAIN, 40f));
         logIn.setForeground(Color.BLACK);
         logIn.setBackground(customGray);
@@ -117,8 +118,6 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         usernameErrorField.setOpaque(false);
         passwordErrorField.setOpaque(false);
         buttons.setOpaque(false);
-
-        // --- 3. Layout Structure (Consolidated) ---
 
         // Panel for vertical stacking and left alignment
         final JPanel formContentPanel = new JPanel();
@@ -165,7 +164,18 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         this.setLayout(new BorderLayout()); // Set main panel layout
         this.add(background, BorderLayout.CENTER); // Add background to fill the main panel
 
-        // --- 5. Listeners and Controllers ---
+        KeyAdapter enterKeyListener = new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    e.consume();
+                    logIn.doClick();
+                }
+            }
+        };
+
+        usernameInputField.addKeyListener(enterKeyListener);
+        passwordInputField.addKeyListener(enterKeyListener);
 
         logIn.addActionListener(
                 evt -> {
@@ -221,7 +231,7 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
 
     /**
      * React to a button click that results in evt.
-     * 
+     *
      * @param evt the ActionEvent to react to
      */
     public void actionPerformed(ActionEvent evt) {

@@ -57,7 +57,7 @@ public class LeaderBoardView extends JPanel implements ActionListener, PropertyC
         titleLabel.setOpaque(false);
 
         // New Highscore Label
-        newHighscoreLabel = new JLabel("🎉 NEW HIGH SCORE! 🎉", SwingConstants.CENTER);
+        newHighscoreLabel = new JLabel("NEW HIGH SCORE!", SwingConstants.CENTER);
         newHighscoreLabel.setFont(headerFont);
         newHighscoreLabel.setForeground(highlightColor);
         newHighscoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);

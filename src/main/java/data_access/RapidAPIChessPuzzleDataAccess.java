@@ -13,9 +13,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Implementation of ChessPuzzleDataAccessInterface using RapidAPI.
- */
 public class RapidAPIChessPuzzleDataAccess implements ChessPuzzleDataAccessInterface {
 
     private static final String API_KEY = "e0afce1850mshfd7d6074e38637ep159346jsnc6b463f2ed09";
@@ -40,10 +37,9 @@ public class RapidAPIChessPuzzleDataAccess implements ChessPuzzleDataAccessInter
 
             int responseCode = conn.getResponseCode();
             if (responseCode == 200) {
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(conn.getInputStream()));
-                String inputLine;
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 StringBuilder response = new StringBuilder();
+                String inputLine;
 
                 while ((inputLine = in.readLine()) != null) {
                     response.append(inputLine);
@@ -58,6 +54,12 @@ public class RapidAPIChessPuzzleDataAccess implements ChessPuzzleDataAccessInter
 
                     String puzzleId = puzzleObj.getString("puzzleid");
                     String fen = puzzleObj.getString("fen");
+
+                    // filter only when white moves first
+                    if (!fen.contains(" w ")) {
+                        continue; // skip puzzles where black moves first
+                    }
+
                     int puzzleRating = puzzleObj.getInt("rating");
 
                     JSONArray movesArray = puzzleObj.getJSONArray("moves");

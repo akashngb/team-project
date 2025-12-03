@@ -44,6 +44,12 @@ import use_case.wordle.StartGameInteractor;
 import use_case.wordle.SubmitGuessInteractor;
 import wordle.WordleView;
 
+// Chess Puzzle Imports
+import entity.ChessPuzzle;
+import data_access.RapidAPIChessPuzzleDataAccess;
+import interface_adapter.chess_puzzle.*;
+import use_case.chess_puzzle.*;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -82,6 +88,11 @@ public class MongoAppBuilder {
     private WordleView wordleView;
     private WordleViewModel wordleViewModel;
     private WordleController wordleController;
+
+    //Chess views
+    private ChessPuzzleView chessPuzzleView;
+    private ChessPuzzleViewModel chessPuzzleViewModel;
+    private CheckMoveInteractor checkMoveInteractor;
 
 
     public MongoAppBuilder() {
@@ -221,6 +232,64 @@ public class MongoAppBuilder {
 
         return this;
     }
+
+    public MongoAppBuilder addChessPuzzleView() {
+        chessPuzzleViewModel = new ChessPuzzleViewModel();
+        chessPuzzleView = new ChessPuzzleView(chessPuzzleViewModel, viewManagerModel);
+
+        JPanel wrapper = new JPanel(new GridBagLayout()); // centers contents
+        wrapper.add(chessPuzzleView);
+
+        cardPanel.add(wrapper, chessPuzzleView.getViewName());
+        return this;
+    }
+
+
+    public MongoAppBuilder addChessPuzzleUseCase() {
+        // Setup data access
+        final ChessPuzzleDataAccessInterface dataAccess = new RapidAPIChessPuzzleDataAccess();
+
+        // Setup Load Puzzles use case
+        final LoadPuzzlesOutputBoundary loadPresenter = new LoadPuzzlesPresenter(chessPuzzleViewModel);
+        final LoadPuzzlesInputBoundary loadInteractor = new LoadPuzzlesInteractor(dataAccess, loadPresenter);
+        final LoadPuzzlesController loadController = new LoadPuzzlesController(loadInteractor);
+
+        // Setup Check Move use case
+        final CheckMoveOutputBoundary checkPresenter = new CheckMovePresenter(chessPuzzleViewModel);
+        checkMoveInteractor = new CheckMoveInteractor(checkPresenter);
+        final CheckMoveController checkController = new CheckMoveController(checkMoveInteractor);
+
+        // Connect controllers to view
+        chessPuzzleView.setLoadPuzzlesController(loadController);
+        chessPuzzleView.setCheckMoveController(checkController);
+
+        // Wire up leaderboard controller
+        if (leaderBoardController != null) {
+            chessPuzzleView.setLeaderBoardController(leaderBoardController);
+        }
+
+        // Setup username tracking from logged in state
+        loggedInViewModel.addPropertyChangeListener(evt -> {
+            if ("state".equals(evt.getPropertyName())) {
+                String currentUser = loggedInViewModel.getState().getUsername();
+                if (currentUser != null && !currentUser.isEmpty()) {
+                    chessPuzzleView.setUserId(currentUser);
+                }
+            }
+        });
+
+        // Add property change listener to set current puzzle
+        chessPuzzleViewModel.addPropertyChangeListener(evt -> {
+            ChessPuzzleState state = chessPuzzleViewModel.getState();
+            ChessPuzzle currentPuzzle = state.getCurrentPuzzle();
+            if (currentPuzzle != null) {
+                checkMoveInteractor.setCurrentPuzzle(currentPuzzle);
+            }
+        });
+
+        return this;
+    }
+
 
     public JFrame build() {
         final JFrame application = new JFrame("User Login - MongoDB");
