@@ -80,8 +80,8 @@ Solve tactical chess positions with move validation and hints.
 GameGrid follows Clean Architecture principles with clear separation of concerns:
 ```
 src/main/java/
-├── app/                    # Application builders and main entry points
-├── entity/                 # Core business entities
+├── app/                   # Application builders and main entry points
+├── entity/                # Core entities
 ├── use_case/              # Use case interactors
 ├── interface_adapter/     # Controllers, presenters, and view models
 ├── data_access/           # Data access objects and API integrations
@@ -112,7 +112,7 @@ src/main/java/
 ### Leaderboard
 ![Leaderboard](src/main/resources/images/readme/Leaderboard2.png)
 
-## 📁 Project Structure
+## Project Structure
 ```
 GameGrid/
 ├── src/
@@ -122,7 +122,7 @@ GameGrid/
 │   │   │   ├── data_access/      # Data persistence
 │   │   │   ├── entity/           # Domain entities
 │   │   │   ├── interface_adapter/# Controllers and presenters
-│   │   │   ├── use_case/         # Business logic
+│   │   │   ├── use_case/         # Core logic
 │   │   │   ├── view/             # UI components
 │   │   │   └── wordle/           # Wordle-specific UI
 │   │   └── resources/
