@@ -14,9 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JRootPane;
-import java.awt.event.HierarchyEvent;
-import javax.swing.SwingUtilities;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * The View for when the user is logging into the program.
@@ -165,14 +164,20 @@ public class LoginView extends JPanel implements ActionListener, PropertyChangeL
         this.setLayout(new BorderLayout()); // Set main panel layout
         this.add(background, BorderLayout.CENTER); // Add background to fill the main panel
 
-        this.addHierarchyListener(e -> {
-            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) != 0) {
-                JRootPane rootPane = SwingUtilities.getRootPane(LoginView.this);
-                if (rootPane != null) {
-                    rootPane.setDefaultButton(logIn);
+        KeyAdapter enterKeyListener = new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    // 1. Consume the event so the input field's default action doesn't run.
+                    e.consume();
+                    // 2. Explicitly trigger the action listener of the Login button.
+                    logIn.doClick();
                 }
             }
-        });
+        };
+
+        usernameInputField.addKeyListener(enterKeyListener);
+        passwordInputField.addKeyListener(enterKeyListener);
 
         logIn.addActionListener(
                 evt -> {
